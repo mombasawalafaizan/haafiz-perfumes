@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -10,7 +10,7 @@ export interface Product {
   id: string;
   name: string;
   slug: string;
-  category: 'perfume' | 'attar';
+  category: "perfume" | "attar";
   fragrance_family: string;
   description: string;
   top_notes: string;
@@ -25,7 +25,7 @@ export interface Product {
 export interface ProductVariant {
   id: string;
   product_id: string;
-  quality: 'Standard' | 'Premium' | 'Luxury';
+  quality: "Standard" | "Premium" | "Luxury";
   price: number;
   mrp: number;
   stock: number;
@@ -61,11 +61,11 @@ export interface Order {
     price: number;
     mrp: number;
   }>;
-  payment_mode: 'cod' | 'razorpay';
-  payment_status: 'pending' | 'paid' | 'failed';
+  payment_mode: "cod" | "razorpay";
+  payment_status: "pending" | "paid" | "failed";
   razorpay_order_id?: string;
   razorpay_payment_id?: string;
-  shipping_status: 'pending' | 'booked' | 'shipped' | 'delivered';
+  shipping_status: "pending" | "booked" | "shipped" | "delivered";
   bigship_awb?: string;
   total_amount: number;
   created_at: string;
@@ -75,7 +75,7 @@ export interface Order {
 export const productsApi = {
   async getAll() {
     const { data, error } = await supabase
-      .from('products')
+      .from("products")
       .select(
         `
         *,
@@ -83,15 +83,15 @@ export const productsApi = {
         product_images (*)
       `
       )
-      .order('created_at', { ascending: false });
+      .order("created_at", { ascending: false });
 
     if (error) throw error;
     return data;
   },
 
-  async getByCategory(category: 'perfume' | 'attar') {
+  async getByCategory(category: "perfume" | "attar") {
     const { data, error } = await supabase
-      .from('products')
+      .from("products")
       .select(
         `
         *,
@@ -99,8 +99,8 @@ export const productsApi = {
         product_images (*)
       `
       )
-      .eq('category', category)
-      .order('created_at', { ascending: false });
+      .eq("category", category)
+      .order("created_at", { ascending: false });
 
     if (error) throw error;
     return data;
@@ -108,7 +108,7 @@ export const productsApi = {
 
   async getBySlug(slug: string) {
     const { data, error } = await supabase
-      .from('products')
+      .from("products")
       .select(
         `
         *,
@@ -116,7 +116,7 @@ export const productsApi = {
         product_images (*)
       `
       )
-      .eq('slug', slug)
+      .eq("slug", slug)
       .single();
 
     if (error) throw error;
@@ -125,7 +125,7 @@ export const productsApi = {
 
   async getFeatured() {
     const { data, error } = await supabase
-      .from('products')
+      .from("products")
       .select(
         `
         *,
@@ -133,8 +133,8 @@ export const productsApi = {
         product_images (*)
       `
       )
-      .eq('featured', true)
-      .order('created_at', { ascending: false })
+      .eq("featured", true)
+      .order("created_at", { ascending: false })
       .limit(8);
 
     if (error) throw error;
@@ -143,9 +143,9 @@ export const productsApi = {
 };
 
 export const ordersApi = {
-  async create(orderData: Omit<Order, 'id' | 'created_at'>) {
+  async create(orderData: Omit<Order, "id" | "created_at">) {
     const { data, error } = await supabase
-      .from('orders')
+      .from("orders")
       .insert(orderData)
       .select()
       .single();
@@ -156,9 +156,9 @@ export const ordersApi = {
 
   async getById(id: string) {
     const { data, error } = await supabase
-      .from('orders')
-      .select('*')
-      .eq('id', id)
+      .from("orders")
+      .select("*")
+      .eq("id", id)
       .single();
 
     if (error) throw error;
@@ -167,9 +167,9 @@ export const ordersApi = {
 
   async getByOrderNumber(orderNumber: string) {
     const { data, error } = await supabase
-      .from('orders')
-      .select('*')
-      .eq('order_number', orderNumber)
+      .from("orders")
+      .select("*")
+      .eq("order_number", orderNumber)
       .single();
 
     if (error) throw error;
@@ -178,7 +178,7 @@ export const ordersApi = {
 
   async updatePaymentStatus(
     id: string,
-    paymentStatus: Order['payment_status'],
+    paymentStatus: Order["payment_status"],
     razorpayIds?: { order_id?: string; payment_id?: string }
   ) {
     const updateData: Partial<Order> = { payment_status: paymentStatus };
@@ -188,9 +188,9 @@ export const ordersApi = {
       updateData.razorpay_payment_id = razorpayIds.payment_id;
 
     const { data, error } = await supabase
-      .from('orders')
+      .from("orders")
       .update(updateData)
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
 
@@ -201,26 +201,26 @@ export const ordersApi = {
 
 export const storageApi = {
   async uploadProductImage(file: File, productId: string, isPrimary = false) {
-    const fileExt = file.name.split('.').pop();
+    const fileExt = file.name.split(".").pop();
     const fileName = `${productId}/${Date.now()}.${fileExt}`;
 
-    const { data, error } = await supabase.storage
-      .from('product-images')
+    const { error } = await supabase.storage
+      .from("product-images")
       .upload(fileName, file);
 
     if (error) throw error;
 
     // Get public URL
     const { data: urlData } = supabase.storage
-      .from('product-images')
+      .from("product-images")
       .getPublicUrl(fileName);
 
     // Save to database
     const { data: imageData, error: dbError } = await supabase
-      .from('product_images')
+      .from("product_images")
       .insert({
         product_id: productId,
-        bucket_id: 'product-images',
+        bucket_id: "product-images",
         path: fileName,
         public_url: urlData.publicUrl,
         is_primary: isPrimary,
@@ -234,9 +234,9 @@ export const storageApi = {
 
   async deleteProductImage(imageId: string) {
     const { error } = await supabase
-      .from('product_images')
+      .from("product_images")
       .delete()
-      .eq('id', imageId);
+      .eq("id", imageId);
 
     if (error) throw error;
   },

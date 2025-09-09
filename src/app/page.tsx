@@ -10,11 +10,8 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
   type CarouselApi,
 } from "@/components/ui/carousel";
-import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function HomePage() {
