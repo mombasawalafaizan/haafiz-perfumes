@@ -1,144 +1,108 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
-import Image from "next/image";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { Truck, RotateCcw, CreditCard } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-// import { Card, CardContent } from '@/components/ui/card';
-import { getProductById } from "@/data/products";
-import { getLeastPriceOption, createProductWithPricing } from "@/lib/utils";
-import {
-  ShoppingCart,
-  Minus,
-  Plus,
-  Search,
-  Truck,
-  RotateCcw,
-  CreditCard,
-} from "lucide-react";
-import { useCart } from "@/hooks/useCart";
-// import { useToast } from '@/hooks/use-toast';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-  type CarouselApi,
-} from "@/components/ui/carousel";
+import { getProductBySlug } from "@/lib/actions/product";
+import { ProductImageCarousel } from "@/components/feature/product-image-carousel";
+import { ProductPricingSelector } from "@/components/feature/product-pricing-selector";
+import { ProductAddToCart } from "@/components/feature/product-add-to-cart";
 
-const ProductDetailPage = () => {
-  const params = useParams();
-  // const router = useRouter();
-  const [product, setProduct] = useState<IProduct | null>(null);
-  const [quantity, setQuantity] = useState(1);
-  const [selectedPricing, setSelectedPricing] =
-    useState<IProductPricing | null>(null);
-  const [isZoomed, setIsZoomed] = useState(false);
-  const [showMobileCarousel, setShowMobileCarousel] = useState(false);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [mobileMainCarouselApi, setMobileMainCarouselApi] =
-    useState<CarouselApi | null>(null);
-  const { addItem } = useCart();
+interface ProductDetailPageProps {
+  params: Promise<{
+    id: string;
+  }>;
+}
 
-  useEffect(() => {
-    if (params.id) {
-      const foundProduct = getProductById(params.id as string);
-      if (foundProduct) {
-        setProduct(foundProduct);
-        // Set default pricing to least price option if multiple pricing options exist
-        if (foundProduct.pricing && foundProduct.pricing.length > 0) {
-          const leastPriceOption = getLeastPriceOption(foundProduct.pricing);
-          setSelectedPricing(leastPriceOption);
-        }
-      }
-    }
-  }, [params.id]);
-
-  // Sync mobile main carousel with selected image
-  useEffect(() => {
-    if (mobileMainCarouselApi) {
-      const handleSelect = () => {
-        const selectedIndex = mobileMainCarouselApi.selectedScrollSnap();
-        setSelectedImageIndex(selectedIndex);
-      };
-
-      mobileMainCarouselApi.on("select", handleSelect);
-      return () => {
-        mobileMainCarouselApi.off("select", handleSelect);
-      };
-    }
-  }, [mobileMainCarouselApi]);
-
-  const handleAddToCart = () => {
-    if (product) {
-      let productToAdd = product;
-
-      // If there's selected pricing, create product with that pricing
-      if (selectedPricing) {
-        productToAdd = createProductWithPricing(product, selectedPricing);
-      }
-      addItem(productToAdd, quantity);
-      // if (result.success) {
-      //   if (result.discarded > 0) {
-      //     toast({
-      //       title: 'Cart limit reached! ⚠️',
-      //       description: `${result.added} × ${product.name} added to cart. ${result.discarded} items discarded (max 10 items allowed).`,
-      //       variant: 'destructive',
-      //     });
-      //   } else {
-      //     toast({
-      //       title: 'Added to cart! 🛍️',
-      //       description: `${result.added} × ${product.name} added to your cart.`,
-      //     });
-      //   }
-      // } else {
-      //   toast({
-      //     title: 'Cart is full! 🛒',
-      //     description: 'Your cart has reached the maximum limit of 10 items. Please remove some items to add more.',
-      //     variant: 'destructive',
-      //   });
-      // }
-    }
-  };
+export async function generateMetadata({
+  params,
+}: ProductDetailPageProps): Promise<Metadata> {
+  const resolvedParams = await params;
+  const product = await getProductBySlug(resolvedParams.id);
 
   if (!product) {
-    return (
-      <div className="container mx-auto px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold text-foreground mb-4">
-          Product Not Found
-        </h1>
-        <p className="text-muted-foreground mb-8">
-          The product you&apos;re looking for doesn&apos;t exist.
-        </p>
-        <Button asChild>
-          <Link href="/collections">Browse Collections</Link>
-        </Button>
-      </div>
-    );
+    return {
+      title: "Product Not Found",
+      description: "The product you're looking for doesn't exist.",
+    };
   }
 
-  const discountPercentage = Math.round(
-    ((product.priceMRP - product.priceActual) / product.priceMRP) * 100
-  );
+  return {
+    title: `${product.name} | Haafiz Perfumes`,
+    description:
+      product.description ||
+      `Discover ${product.name} - Premium fragrance from Haafiz Perfumes. ${
+        product.fragrance_family
+          ? `Fragrance family: ${product.fragrance_family}.`
+          : ""
+      }`,
+    openGraph: {
+      title: product.name,
+      description:
+        product.description || `Premium fragrance from Haafiz Perfumes`,
+      images: (product.product_images?.[0]?.images as { backblaze_url: string })
+        ?.backblaze_url
+        ? [
+            (product.product_images[0].images as { backblaze_url: string })
+              ?.backblaze_url,
+          ]
+        : [],
+    },
+  };
+}
 
-  const hasMultiplePricing = product.pricing && product.pricing.length > 1;
+export default async function ProductDetailPage({
+  params,
+}: ProductDetailPageProps) {
+  const resolvedParams = await params;
+  const product = await getProductBySlug(resolvedParams.id);
+  console.log(product);
 
-  // Create image array for carousel (using same image for now, you can add more images)
-  const productImages = [
-    product.imageUrl,
-    "/haafiz_perfumes_branding.png", // Replace with actual different images
-    product.imageUrl,
-    "/haafiz_perfumes_branding.png", // Replace with actual different images
-    product.imageUrl,
-    "/haafiz_perfumes_branding.png", // Replace with actual different images
-    product.imageUrl,
-    "/haafiz_perfumes_branding.png", // Replace with actual different images
-    product.imageUrl, // Replace with actual different images
-    product.imageUrl, // Replace with actual different images
-  ];
+  if (!product) {
+    notFound();
+  }
+
+  // Get primary product image
+  const primaryProductImage = (
+    product.product_images?.find((img) => img.is_primary)?.images as {
+      backblaze_url: string;
+    }
+  )?.backblaze_url;
+  const fallbackImage = (
+    product.product_images?.[0]?.images as { backblaze_url: string }
+  )?.backblaze_url;
+  const productImageUrl =
+    primaryProductImage || fallbackImage || "/placeholder-product.jpg";
+
+  // Get all product images for carousel
+  const productImages = product.product_images
+    ?.map((img) => (img.images as { backblaze_url: string })?.backblaze_url)
+    .filter(Boolean) || [productImageUrl];
+
+  // Get all variant images for carousel
+  const variantImages =
+    product.product_variants?.flatMap(
+      (variant) =>
+        variant.variant_images
+          ?.map(
+            (img) => (img.images as { backblaze_url: string })?.backblaze_url
+          )
+          .filter(Boolean) || []
+    ) || [];
+
+  // Combine all images, removing duplicates
+  const allImages = [...new Set([...productImages, ...variantImages])];
+
+  // Calculate discount percentage from the first variant
+  const firstVariant = product.product_variants?.[0];
+  const discountPercentage =
+    firstVariant && firstVariant.mrp > firstVariant.price
+      ? Math.round(
+          ((firstVariant.mrp - firstVariant.price) / firstVariant.mrp) * 100
+        )
+      : 0;
+
+  const hasMultiplePricing =
+    product.product_variants && product.product_variants.length > 1;
 
   return (
     <div>
@@ -147,67 +111,11 @@ const ProductDetailPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Product Image */}
           <div className="space-y-4">
-            {/* Main Image */}
-            <div
-              className="relative aspect-square overflow-hidden rounded-lg border border-border cursor-zoom-in group"
-              onClick={() => setIsZoomed(!isZoomed)}
-            >
-              <Image
-                src={productImages[selectedImageIndex]}
-                alt={product.name}
-                fill
-                className={`object-cover transition-transform duration-300 ${
-                  isZoomed ? "scale-150" : "group-hover:scale-105"
-                }`}
-              />
-              {discountPercentage > 0 && (
-                <Badge className="absolute top-4 left-4 bg-primary text-primary-foreground">
-                  {discountPercentage}% OFF
-                </Badge>
-              )}
-
-              {/* Mobile Carousel Trigger */}
-              <div className="md:hidden absolute bottom-4 right-4 z-10">
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className="bg-background shadow"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowMobileCarousel(true);
-                  }}
-                >
-                  <Search className="w-4 h-4 text-foreground" />
-                </Button>
-              </div>
-            </div>
-
-            {/* Desktop Mini Carousel */}
-            <div className="hidden md:block">
-              <div className="flex justify-center space-x-2">
-                {productImages.map((image, index) => (
-                  <div
-                    key={index}
-                    className={`relative w-20 h-20 overflow-hidden rounded-lg border-2 cursor-pointer transition-all ${
-                      selectedImageIndex === index
-                        ? "border-primary"
-                        : "border-border hover:border-primary/50"
-                    }`}
-                    onClick={() => setSelectedImageIndex(index)}
-                  >
-                    <Image
-                      src={image}
-                      alt={`${product.name} - Image ${index + 1}`}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Mobile Mini Carousel - Only show in modal */}
-            {/* Removed the mobile mini carousel from main view */}
+            <ProductImageCarousel
+              images={allImages}
+              productName={product.name}
+              discountPercentage={discountPercentage}
+            />
           </div>
 
           {/* Product Info */}
@@ -221,129 +129,38 @@ const ProductDetailPage = () => {
 
             {/* Pricing Selection */}
             {hasMultiplePricing && (
-              <div className="space-y-3">
-                <div className="flex flex-wrap gap-3">
-                  {product.pricing!.map((pricingOption, index) => {
-                    const isSelected = selectedPricing === pricingOption;
-                    // const optionDiscount = pricingOption.mrp && pricingOption.price
-                    //   ? Math.round(((pricingOption.mrp - pricingOption.price) / pricingOption.mrp) * 100)
-                    //   : 0;
-
-                    return (
-                      <div
-                        key={index}
-                        className={`py-2 px-4 border-2 rounded-lg cursor-pointer transition-all w-fit flex gap-0.5 flex-col items-center justify-center ${
-                          isSelected
-                            ? "border-primary bg-primary/5"
-                            : "border-primary/20 hover:border-primary/50"
-                        }`}
-                        onClick={() => setSelectedPricing(pricingOption)}
-                      >
-                        <div className="font-semibold w-fit text-foreground">
-                          {pricingOption.volume}ml
-                        </div>
-                        {pricingOption.quality && (
-                          <span className="text-sm text-muted-foreground">
-                            ({pricingOption.quality})
-                          </span>
-                        )}
-                        <div className="flex items-center space-x-2">
-                          <span className="text-lg font-bold text-primary">
-                            ₹{pricingOption.price?.toLocaleString()}
-                          </span>
-                          {pricingOption.mrp &&
-                            pricingOption.price &&
-                            pricingOption.mrp > pricingOption.price && (
-                              <span className="text-sm text-muted-foreground line-through">
-                                ₹{pricingOption.mrp.toLocaleString()}
-                              </span>
-                            )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+              <ProductPricingSelector
+                variants={product.product_variants || []}
+              />
             )}
 
-            {/* Price Display */}
-            {!hasMultiplePricing && (
+            {/* Price Display for single variant */}
+            {!hasMultiplePricing && firstVariant && (
               <div className="space-y-2">
                 <div className="flex items-center space-x-3">
                   <span className="text-3xl font-bold text-primary">
-                    ₹{product.priceActual.toLocaleString()}
+                    ₹{firstVariant.price.toLocaleString()}
                   </span>
-                  {product.priceMRP > product.priceActual && (
+                  {firstVariant.mrp > firstVariant.price && (
                     <span className="text-xl text-muted-foreground line-through">
-                      ₹{product.priceMRP.toLocaleString()}
+                      ₹{firstVariant.mrp.toLocaleString()}
                     </span>
                   )}
                 </div>
                 {discountPercentage > 0 && (
                   <p className="text-lg text-primary font-medium">
                     Save ₹
-                    {(product.priceMRP - product.priceActual).toLocaleString()}
+                    {(firstVariant.mrp - firstVariant.price).toLocaleString()}
                   </p>
                 )}
               </div>
             )}
 
-            {/* Selected Price Display */}
-            {hasMultiplePricing && selectedPricing && (
-              <div className="space-y-2">
-                <div className="flex items-center space-x-3">
-                  <span className="text-3xl font-bold text-primary">
-                    ₹{selectedPricing.price?.toLocaleString()}
-                  </span>
-                  {selectedPricing.mrp &&
-                    selectedPricing.price &&
-                    selectedPricing.mrp > selectedPricing.price && (
-                      <span className="text-xl text-muted-foreground line-through">
-                        ₹{selectedPricing.mrp.toLocaleString()}
-                      </span>
-                    )}
-                </div>
-                {selectedPricing.mrp && selectedPricing.price && (
-                  <p className="text-lg text-primary font-medium">
-                    Save ₹
-                    {(
-                      selectedPricing.mrp - selectedPricing.price
-                    ).toLocaleString()}
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Quantity and Add to Cart */}
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                >
-                  <Minus className="w-4 h-4" />
-                </Button>
-                <span className="w-12 text-center font-medium">{quantity}</span>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setQuantity(quantity + 1)}
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </div>
-
-              <Button
-                onClick={handleAddToCart}
-                disabled={hasMultiplePricing && !selectedPricing}
-                className="flex-1 btn-gradient-golden text-black font-semibold py-3 text-lg"
-                size="lg"
-              >
-                <ShoppingCart className="w-5 h-5 mr-2" />
-                Add to Cart
-              </Button>
-            </div>
+            {/* Add to Cart */}
+            <ProductAddToCart
+              product={product}
+              hasMultiplePricing={hasMultiplePricing || false}
+            />
 
             {/* Features Banner */}
             <div className="bg-gradient-card p-6 rounded-lg">
@@ -378,22 +195,17 @@ const ProductDetailPage = () => {
               </div>
             </div>
 
-            {/* Fragrance Notes */}
-            {product.fragrance_family &&
-              product.fragrance_family.length > 0 && (
-                <div className="space-y-3">
-                  <h3 className="text-lg font-semibold text-foreground">
-                    Fragrance Family
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {product.fragrance_family.map((note, index) => (
-                      <Badge key={index} variant="secondary">
-                        {note}
-                      </Badge>
-                    ))}
-                  </div>
+            {/* Fragrance Family */}
+            {product.fragrance_family && (
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold text-foreground">
+                  Fragrance Family
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="secondary">{product.fragrance_family}</Badge>
                 </div>
-              )}
+              </div>
+            )}
 
             {/* Additional Notes */}
             {product.additional_notes && (
@@ -406,6 +218,7 @@ const ProductDetailPage = () => {
                 </p>
               </div>
             )}
+
             {/* Fragrance Notes Details */}
             {(product.top_notes ||
               product.middle_notes ||
@@ -445,79 +258,6 @@ const ProductDetailPage = () => {
           </div>
         </div>
       </section>
-
-      {/* Mobile Carousel Modal */}
-      {showMobileCarousel && (
-        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center md:hidden">
-          <div className="relative w-full h-full flex flex-col">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-4 right-4 text-white hover:bg-white/20 z-10"
-              onClick={() => setShowMobileCarousel(false)}
-            >
-              <span className="text-2xl">×</span>
-            </Button>
-
-            {/* Main Carousel */}
-            <div className="flex-1 flex items-center justify-center p-4">
-              <Carousel
-                className="w-full max-w-sm"
-                setApi={setMobileMainCarouselApi}
-              >
-                <CarouselContent>
-                  {productImages.map((image, index) => (
-                    <CarouselItem key={index}>
-                      <div className="relative aspect-square overflow-hidden rounded-lg">
-                        <Image
-                          src={image}
-                          alt={`${product.name} - Image ${index + 1}`}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <CarouselPrevious className="text-white" />
-                <CarouselNext className="text-white" />
-              </Carousel>
-            </div>
-
-            {/* Mini Carousel at Bottom */}
-            <div className="p-4 border-t border-white/20">
-              <div className="flex justify-center space-x-2">
-                {productImages.map((image, index) => (
-                  <div
-                    key={index}
-                    className={`relative w-16 h-16 overflow-hidden rounded-lg border-2 cursor-pointer transition-all ${
-                      selectedImageIndex === index
-                        ? "border-white"
-                        : "border-white/30 hover:border-white/50"
-                    }`}
-                    onClick={() => {
-                      setSelectedImageIndex(index);
-                      // Sync the main carousel with the selected image
-                      if (mobileMainCarouselApi) {
-                        mobileMainCarouselApi.scrollTo(index);
-                      }
-                    }}
-                  >
-                    <Image
-                      src={image}
-                      alt={`${product.name} - Thumbnail ${index + 1}`}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
-};
-
-export default ProductDetailPage;
+}

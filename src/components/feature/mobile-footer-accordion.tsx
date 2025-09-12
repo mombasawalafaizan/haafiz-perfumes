@@ -36,12 +36,12 @@ export function MobileFooterAccordion() {
             >
               Authentic Attars
             </Link>
-            <Link
+            {/* <Link
               href="/collections/combos"
               className="block text-muted-foreground hover:text-primary transition-colors"
             >
               Combo Offers
-            </Link>
+            </Link> */}
           </div>
         </AccordionContent>
       </AccordionItem>

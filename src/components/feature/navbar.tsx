@@ -18,10 +18,10 @@ export function Navbar() {
   const navigationItems = [
     { name: "Home", href: "/" },
     // { name: 'Collections', href: '/collections' },
-    { name: "Perfumes", href: "/collections/perfumes" },
-    { name: "Attars", href: "/collections/attars" },
-    { name: "Combos", href: "/collections/combos" },
-    { name: "Track Orders", href: "#", disabled: true },
+    { name: "Perfumes", href: "/collections/perfumes", disabled: false },
+    { name: "Attars", href: "/collections/attars", disabled: false },
+    // { name: "Combos", href: "/collections/combos", disabled: false },
+    // { name: "Track Orders", href: "#", disabled: true },
   ];
 
   return (

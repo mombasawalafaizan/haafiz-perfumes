@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { ExternalLink } from "@/components/ui/external-link";
-import { MobileFooterAccordion } from "./mobile-footer-accordion";
+import { MobileFooterAccordion } from "@/components/feature/mobile-footer-accordion";
 
 export function Footer() {
   return (
@@ -73,12 +73,12 @@ export function Footer() {
               >
                 Authentic Attars
               </Link>
-              <Link
+              {/* <Link
                 href="/collections/combos"
                 className="block text-muted-foreground hover:text-primary transition-colors"
               >
                 Combo Offers
-              </Link>
+              </Link> */}
             </div>
           </div>
 

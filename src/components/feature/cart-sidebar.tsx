@@ -120,7 +120,7 @@ export function CartSidebar() {
                               ₹{item.priceActual.toLocaleString()}
                             </span>
                             {item.priceMRP > item.priceActual && (
-                              <span className="text-xs text-muted-foreground line-through">
+                              <span className="text-sm text-muted-foreground line-through">
                                 ₹{item.priceMRP.toLocaleString()}
                               </span>
                             )}

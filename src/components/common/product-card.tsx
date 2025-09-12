@@ -5,46 +5,82 @@ import { ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useRouter } from "next/navigation";
 import { useCart } from "@/hooks/useCart";
+import { useIsMobile } from "@/hooks/use-mobile";
 //  import { useToast } from '@/hooks/use-toast';
-import { getLeastPriceOption, createProductWithPricing } from "@/lib/utils";
+import { IProductDetail } from "@/types/product";
 
 interface ProductCardProps {
-  product: IProduct;
-  onProductClick?: () => void;
-  layout?: "horizontal" | "vertical";
+  product: IProductDetail;
 }
 
-export function ProductCard({
-  product,
-  onProductClick,
-  layout = "vertical",
-}: ProductCardProps) {
+export function ProductCard({ product }: ProductCardProps) {
+  const router = useRouter();
   // const { toast } = useToast();
   const { addItem } = useCart();
+  const isMobile = useIsMobile();
+  const layout = isMobile ? "horizontal" : "vertical";
 
-  // Get the least price option if multiple pricing options exist
-  const leastPriceOption =
-    product.pricing && product.pricing.length > 0
-      ? getLeastPriceOption(product.pricing)
-      : null;
+  const placeholderImage =
+    product.category === "attar"
+      ? "/attar_placeholder.jpg"
+      : "/perfume_placeholder.jpg";
 
-  // Use least price option for display if available
-  const displayPrice = leastPriceOption?.price || product.priceActual;
-  const displayMRP = leastPriceOption?.mrp || product.priceMRP;
-  const displaySize = leastPriceOption?.volume || product.sizeMl;
+  // Get primary product image
+  const primaryProductImage = product.product_images?.find(
+    (pi) => pi.is_primary
+  );
+  const productImageUrl =
+    (primaryProductImage?.images as { backblaze_url: string })?.backblaze_url ||
+    placeholderImage;
+
+  // Get the lowest price variant for display
+  const lowestPriceVariant = product.product_variants?.reduce(
+    (lowest, current) => (current.price < lowest.price ? current : lowest)
+  );
+
+  if (!lowestPriceVariant) {
+    return null; // Don't render if no variants
+  }
+
+  const displayPrice = lowestPriceVariant.price;
+  const displayMRP = lowestPriceVariant.mrp;
+  const displaySize = lowestPriceVariant.volume || 50; // Default to 50ml
 
   const discountPercentage = Math.round(
     ((displayMRP - displayPrice) / displayMRP) * 100
   );
 
   const handleAddToCart = () => {
-    let productToAdd = product;
-
-    // If there's a least price option, create product with that pricing
-    if (leastPriceOption) {
-      productToAdd = createProductWithPricing(product, leastPriceOption);
-    }
+    // Convert IProductDetail to IProduct format for cart
+    const productToAdd: IProduct = {
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      imageUrl: productImageUrl,
+      priceMRP: displayMRP,
+      priceActual: displayPrice,
+      sizeMl: displaySize,
+      fragrance_family: product.fragrance_family
+        ? [product.fragrance_family]
+        : [],
+      top_notes: product.top_notes || "",
+      base_notes: product.base_notes || "",
+      middle_notes: product.middle_notes || "",
+      additional_notes: product.additional_notes || "",
+      description: product.description || "",
+      pricing:
+        product.product_variants?.map((variant) => ({
+          mrp: variant.mrp,
+          price: variant.price,
+          volume: variant.volume || 50,
+          stock: variant.stock,
+          quality: variant.product_quality as "Standard" | "Premium" | "Luxury",
+          sku: variant.sku,
+        })) || [],
+      category: product.category as "perfume" | "attar",
+    };
 
     addItem(productToAdd, 1);
 
@@ -73,7 +109,7 @@ export function ProductCard({
   return (
     <Card
       className="group overflow-hidden border-2 border-primary/20 hover:border-primary/40 hover:shadow-elegant transition-all duration-300 hover:-translate-y-1 bg-gradient-card cursor-pointer"
-      onClick={onProductClick}
+      onClick={() => router.push(`/products/${product.slug}`)}
     >
       {layout === "horizontal" ? (
         // Horizontal layout
@@ -81,7 +117,7 @@ export function ProductCard({
           {/* Left Section - Product Image */}
           <div className="relative w-2/5 aspect-square overflow-hidden">
             <Image
-              src={product.imageUrl}
+              src={productImageUrl}
               alt={product.name}
               fill
               className="object-cover group-hover:scale-110 transition-transform duration-500"
@@ -101,11 +137,12 @@ export function ProductCard({
                 <h3 className="font-semibold text-sm md:text-lg text-foreground group-hover:text-primary transition-colors line-clamp-2">
                   {product.name}
                 </h3>
-                {product.pricing && product.pricing.length > 1 && (
-                  <p className="text-xs md:text-sm text-muted-foreground mt-1">
-                    {displaySize}ml
-                  </p>
-                )}
+                {product.product_variants &&
+                  product.product_variants.length > 1 && (
+                    <p className="text-xs md:text-sm text-muted-foreground mt-1">
+                      {displaySize}ml
+                    </p>
+                  )}
               </div>
 
               {/* Price Information */}
@@ -146,7 +183,7 @@ export function ProductCard({
         <>
           <div className="relative aspect-square overflow-hidden">
             <Image
-              src={product.imageUrl}
+              src={productImageUrl}
               alt={product.name}
               fill
               className="object-cover group-hover:scale-110 transition-transform duration-500"
@@ -164,11 +201,12 @@ export function ProductCard({
                 <h3 className="font-semibold text-sm md:text-lg text-foreground group-hover:text-primary transition-colors">
                   {product.name}
                 </h3>
-                {product.pricing && product.pricing.length > 1 && (
-                  <p className="text-xs md:text-sm text-muted-foreground mt-1">
-                    {displaySize}ml
-                  </p>
-                )}
+                {product.product_variants &&
+                  product.product_variants.length > 1 && (
+                    <p className="text-xs md:text-sm text-muted-foreground mt-1">
+                      {displaySize}ml
+                    </p>
+                  )}
               </div>
 
               <div className="space-y-1">

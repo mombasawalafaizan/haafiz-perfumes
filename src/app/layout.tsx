@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { CartProvider } from "@/hooks/useCart";
-import { CartSidebar } from "@/components/ui/cart-sidebar";
+import { CartSidebar } from "@/components/feature/cart-sidebar";
 import { Toaster } from "@/components/ui/toaster";
-import { Navbar } from "@/components/ui/navbar";
+import { Navbar } from "@/components/feature/navbar";
 import { Footer } from "@/components/ui/footer";
 import "@/styles/globals.css";
 
@@ -25,7 +25,7 @@ export default function RootLayout({
       <body className={inter.className} suppressHydrationWarning>
         <CartProvider>
           <Navbar />
-          <main className="min-h-screen bg-background">{children}</main>
+          <main className="h-full bg-background">{children}</main>
           <Footer />
           <CartSidebar />
           <Toaster

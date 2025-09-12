@@ -1,11 +1,10 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { heroSlides } from '@/data/products';
+"use client";
+import Image from "next/image";
+import Link from "next/link";
+import { useState, useEffect } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { heroSlides } from "@/data/products";
 
 export function HeroCarousel() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -35,7 +34,9 @@ export function HeroCarousel() {
         <div
           key={slide.id}
           className={`absolute inset-0 transition-opacity duration-1000 ${
-            index === currentSlide ? 'opacity-100' : 'opacity-0'
+            index === currentSlide
+              ? "opacity-100"
+              : "opacity-0 pointer-events-none"
           }`}
         >
           <div className="relative w-full h-full">
@@ -98,8 +99,8 @@ export function HeroCarousel() {
             key={index}
             className={`w-3 h-3 rounded-full transition-all duration-300 ${
               index === currentSlide
-                ? 'bg-primary scale-125'
-                : 'bg-white/50 hover:bg-white/70'
+                ? "bg-primary scale-125"
+                : "bg-white/50 hover:bg-white/70"
             }`}
             onClick={() => setCurrentSlide(index)}
           />
