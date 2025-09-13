@@ -43,7 +43,6 @@ export default function AdminLoginForm() {
       const formData = new FormData();
       formData.append("password", data.password);
       const result = await authenticateAdmin(formData);
-      console.log(result);
       if (!result.success) {
         setError(result.message);
       }

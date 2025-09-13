@@ -6,6 +6,33 @@ declare type TSortOption =
   | "date-new-old"
   | "price-low-high"
   | "price-high-low";
+
+declare interface IMultiSelectProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof multiSelectVariants> {
+  options: IMultiSelectOption[];
+  onValueChange: (value: (string | number | boolean)[]) => void;
+  defaultValue?: (string | number | boolean)[];
+  placeholder?: string;
+  animation?: number;
+  maxCount?: number;
+  modalPopover?: boolean;
+  className?: string;
+  variant?: "default" | "secondary" | "destructive" | "inverted";
+  loading?: boolean;
+}
+
+declare interface ToggleGroupSelectorProps {
+  options: IToggleOption[];
+  value?: string;
+  onValueChange?: (value: string) => void;
+  variant?: VariantProps<typeof toggleGroupVariants>["variant"];
+  size?: VariantProps<typeof toggleGroupVariants>["size"];
+  className?: string;
+  disabled?: boolean;
+  orientation?: "horizontal" | "vertical";
+}
+
 declare interface ISimpleSelectProps {
   options: IFilterOption[];
   value?: string | number;

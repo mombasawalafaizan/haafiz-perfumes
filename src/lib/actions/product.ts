@@ -1,6 +1,7 @@
 "use server";
-import { supabase } from "@/lib/supabase";
-import { IProductDetail } from "@/types/product";
+import { querySupabase, supabase } from "@/lib/supabase";
+import { IProduct, IProductDetail } from "@/types/product";
+import { IPaginationParams, ISupabaseQueryConfig } from "@/types/query";
 
 const PRODUCT_DETAIL_QUERY = `
         id,
@@ -197,6 +198,27 @@ export async function getProductBySlug(slug: string): Promise<IProductDetail> {
     console.error("Error in getProductBySlug:", error);
     throw error;
   }
+}
+
+export async function getProducts(params: IPaginationParams) {
+  const config: ISupabaseQueryConfig = {
+    searchFields: ["name", "description"],
+    sortingFields: ["name", "created_at", "updated_at"],
+    filterFields: [
+      {
+        field: "category",
+        type: "enum",
+        allowedValues: ["perfume", "attar"],
+      },
+      { field: "updated_at", type: "date", operator: "gte" },
+      { field: "updated_at", type: "date", operator: "lte" },
+      { field: "created_at", type: "date", operator: "gte" },
+      { field: "created_at", type: "date", operator: "lte" },
+      { field: "is_featured", type: "boolean" },
+    ],
+  };
+
+  return querySupabase<IProduct>("products", params, config);
 }
 
 // export async function getAllProducts(): Promise<IProductDetail[]> {

@@ -18,6 +18,7 @@ export interface IImage {
   height?: number; // INT4, nullable
   context?: IImageContext; // image_context, default 'both'
   created_at?: string; // TIMESTAMP, default CURRENT_TIMESTAMP
+  updated_at?: string; // TIMESTAMP, default CURRENT_TIMESTAMP
 }
 
 // Products Table

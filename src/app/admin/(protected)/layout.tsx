@@ -1,4 +1,16 @@
+"use client";
 import { AdminNavbar } from "@/components/admin/admin-navbar";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,
+      retry: 1,
+      refetchOnWindowFocus: true,
+    },
+  },
+});
 
 export default function ProtectedAdminLayout({
   children,
@@ -6,9 +18,11 @@ export default function ProtectedAdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-background">
-      <AdminNavbar />
-      <main className="container mx-auto px-4 py-8">{children}</main>
-    </div>
+    <QueryClientProvider client={queryClient}>
+      <div className="min-h-screen bg-background">
+        <AdminNavbar />
+        <main className="container mx-auto px-4 py-8">{children}</main>
+      </div>
+    </QueryClientProvider>
   );
 }
