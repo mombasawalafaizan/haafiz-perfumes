@@ -4,34 +4,32 @@ import { SortSelect } from "@/components/common/sort-select";
 import { getProductsByCategory } from "@/lib/actions/product";
 
 export const metadata: Metadata = {
-  title: "Premium Perfumes | Haafiz Perfumes",
+  title: "Authentic Attars | Haafiz Perfumes",
   description:
-    "Discover our collection of luxury perfumes crafted with the finest ingredients. Premium fragrances for every occasion.",
+    "Discover our collection of traditional attars with modern sophistication. Premium fragrances crafted with authentic ingredients.",
   keywords: [
-    "perfumes",
-    "luxury perfumes",
+    "attars",
+    "traditional attars",
     "premium fragrances",
     "haafiz perfumes",
-    "perfume collection",
+    "attar collection",
   ],
   openGraph: {
-    title: "Premium Perfumes | Haafiz Perfumes",
+    title: "Authentic Attars | Haafiz Perfumes",
     description:
-      "Discover our collection of luxury perfumes crafted with the finest ingredients.",
+      "Discover our collection of traditional attars with modern sophistication.",
     type: "website",
   },
 };
 
-interface PerfumesPageProps {
-  searchParams: { [key: string]: string | string[] | undefined };
+interface AttarsPageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function PerfumesPage({
-  searchParams,
-}: PerfumesPageProps) {
-  const sortParam = searchParams.sort as string;
+export default async function AttarsPage({ searchParams }: AttarsPageProps) {
+  const sortParam = (await searchParams)?.sort as string;
   const sortOption = (sortParam as TSortOption) || "name-asc";
-  const perfumes = await getProductsByCategory("perfume", sortOption);
+  const attars = await getProductsByCategory("attar", sortOption);
 
   return (
     <div>
@@ -40,11 +38,11 @@ export default async function PerfumesPage({
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-foreground md:mb-2">
-              Premium Perfumes
+              Authentic Attars
             </h1>
             <p className="hidden md:block text-muted-foreground">
-              Discover our collection of luxury perfumes crafted with the finest
-              ingredients
+              Discover our collection of traditional attars with modern
+              sophistication
             </p>
           </div>
           <SortSelect currentSort={sortOption} />
@@ -53,15 +51,15 @@ export default async function PerfumesPage({
 
       {/* Products Grid */}
       <div className="container mx-auto px-4 pb-16">
-        {perfumes.length > 0 ? (
+        {attars.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {perfumes.map((perfume) => (
-              <ProductCard key={perfume.id} product={perfume} />
+            {attars.map((attar) => (
+              <ProductCard key={attar.id} product={attar} />
             ))}
           </div>
         ) : (
           <div className="text-center py-12">
-            <p className="text-muted-foreground">No perfumes found.</p>
+            <p className="text-muted-foreground">No attars found.</p>
           </div>
         )}
       </div>

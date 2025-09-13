@@ -57,6 +57,7 @@ export function ProductImageCarousel({
           src={images[selectedImageIndex] || "/placeholder-product.jpg"}
           alt={productName}
           fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className={`object-cover transition-transform duration-300 ${
             isZoomed ? "scale-150" : "group-hover:scale-105"
           }`}
@@ -101,6 +102,7 @@ export function ProductImageCarousel({
                   src={image}
                   alt={`${productName} - Image ${index + 1}`}
                   fill
+                  sizes="(max-width: 768px) 20vw, (max-width: 1200px) 10vw, 8vw"
                   className="object-cover"
                 />
               </div>
@@ -137,6 +139,7 @@ export function ProductImageCarousel({
                           src={image}
                           alt={`${productName} - Image ${index + 1}`}
                           fill
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           className="object-cover"
                         />
                       </div>
@@ -166,6 +169,7 @@ export function ProductImageCarousel({
                         src={image}
                         alt={`${productName} - Thumbnail ${index + 1}`}
                         fill
+                        sizes="(max-width: 768px) 15vw, (max-width: 1200px) 8vw, 6vw"
                         className="object-cover"
                       />
                     </div>

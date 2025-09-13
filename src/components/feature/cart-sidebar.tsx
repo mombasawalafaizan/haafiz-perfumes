@@ -81,13 +81,14 @@ export function CartSidebar() {
                     key={item.id}
                     className="bg-background rounded-lg p-2 shadow-sm border border-primary/20"
                   >
-                    <div className="flex items-start space-x-2">
+                    <div className="flex items-start space-x-3">
                       {/* Product Image */}
                       <div className="relative w-20 h-20 flex-shrink-0">
                         <Image
                           src={item.imageUrl}
                           alt={item.name}
                           fill
+                          sizes="(min-resolution: 2dppx) 160px, 80px"
                           className="object-cover rounded-md"
                         />
                       </div>
@@ -200,7 +201,7 @@ export function CartSidebar() {
                 {/* Checkout Button */}
                 <Button
                   onClick={handleCheckout}
-                  className="w-full text-foreground bg-gradient-accent font-semibold py-3 text-lg"
+                  className="w-full bg-gradient-accent font-semibold py-3 text-lg"
                   size="lg"
                 >
                   CHECKOUT
@@ -209,7 +210,7 @@ export function CartSidebar() {
             ) : (
               <Button
                 onClick={() => setCartOpen(false)}
-                className="w-full btn-gradient-golden text-black font-semibold"
+                className="w-full btn-gradient-golde font-semibold"
                 size="lg"
               >
                 Continue Shopping

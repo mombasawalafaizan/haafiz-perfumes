@@ -4,8 +4,7 @@ import { Truck, RotateCcw, CreditCard } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getProductBySlug } from "@/lib/actions/product";
 import { ProductImageCarousel } from "@/components/feature/product-image-carousel";
-import { ProductPricingSelector } from "@/components/feature/product-pricing-selector";
-import { ProductAddToCart } from "@/components/feature/product-add-to-cart";
+import { ProductPricingAndCart } from "@/components/feature/product-pricing-and-cart";
 
 interface ProductDetailPageProps {
   params: Promise<{
@@ -55,7 +54,6 @@ export default async function ProductDetailPage({
 }: ProductDetailPageProps) {
   const resolvedParams = await params;
   const product = await getProductBySlug(resolvedParams.id);
-  console.log(product);
 
   if (!product) {
     notFound();
@@ -92,7 +90,7 @@ export default async function ProductDetailPage({
   // Combine all images, removing duplicates
   const allImages = [...new Set([...productImages, ...variantImages])];
 
-  // Calculate discount percentage from the first variant
+  // Calculate discount percentage from the first variant for image carousel
   const firstVariant = product.product_variants?.[0];
   const discountPercentage =
     firstVariant && firstVariant.mrp > firstVariant.price
@@ -124,40 +122,13 @@ export default async function ProductDetailPage({
               <h1 className="text-3xl font-bold text-foreground mb-2">
                 {product.name}
               </h1>
-              <p className="text-muted-foreground">{product.description}</p>
+              {product.description && (
+                <p className="text-muted-foreground">{product.description}</p>
+              )}
             </div>
 
-            {/* Pricing Selection */}
-            {hasMultiplePricing && (
-              <ProductPricingSelector
-                variants={product.product_variants || []}
-              />
-            )}
-
-            {/* Price Display for single variant */}
-            {!hasMultiplePricing && firstVariant && (
-              <div className="space-y-2">
-                <div className="flex items-center space-x-3">
-                  <span className="text-3xl font-bold text-primary">
-                    ₹{firstVariant.price.toLocaleString()}
-                  </span>
-                  {firstVariant.mrp > firstVariant.price && (
-                    <span className="text-xl text-muted-foreground line-through">
-                      ₹{firstVariant.mrp.toLocaleString()}
-                    </span>
-                  )}
-                </div>
-                {discountPercentage > 0 && (
-                  <p className="text-lg text-primary font-medium">
-                    Save ₹
-                    {(firstVariant.mrp - firstVariant.price).toLocaleString()}
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Add to Cart */}
-            <ProductAddToCart
+            {/* Pricing Selection and Add to Cart */}
+            <ProductPricingAndCart
               product={product}
               hasMultiplePricing={hasMultiplePricing || false}
             />
@@ -207,18 +178,6 @@ export default async function ProductDetailPage({
               </div>
             )}
 
-            {/* Additional Notes */}
-            {product.additional_notes && (
-              <div className="space-y-2">
-                <h3 className="text-lg font-semibold text-foreground">
-                  Additional Notes
-                </h3>
-                <p className="text-muted-foreground">
-                  {product.additional_notes}
-                </p>
-              </div>
-            )}
-
             {/* Fragrance Notes Details */}
             {(product.top_notes ||
               product.middle_notes ||
@@ -253,6 +212,18 @@ export default async function ProductDetailPage({
                     </div>
                   )}
                 </div>
+              </div>
+            )}
+
+            {/* Additional Notes */}
+            {product.additional_notes && (
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold text-foreground">
+                  Additional Notes
+                </h3>
+                <p className="text-muted-foreground">
+                  {product.additional_notes}
+                </p>
               </div>
             )}
           </div>

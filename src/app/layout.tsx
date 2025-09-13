@@ -1,10 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { CartProvider } from "@/hooks/useCart";
-import { CartSidebar } from "@/components/feature/cart-sidebar";
 import { Toaster } from "@/components/ui/toaster";
-import { Navbar } from "@/components/feature/navbar";
-import { Footer } from "@/components/ui/footer";
 import "@/styles/globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -23,17 +19,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className} suppressHydrationWarning>
-        <CartProvider>
-          <Navbar />
-          <main className="h-full bg-background">{children}</main>
-          <Footer />
-          <CartSidebar />
-          <Toaster
-            position="top-center"
-            richColors
-            mobileOffset={{ top: "35px", left: "20px", right: "20px" }}
-          />
-        </CartProvider>
+        {children}
+        <Toaster
+          position="top-center"
+          richColors
+          mobileOffset={{ top: "35px", left: "20px", right: "20px" }}
+        />
       </body>
     </html>
   );

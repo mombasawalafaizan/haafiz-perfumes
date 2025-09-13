@@ -34,7 +34,7 @@ const FeaturedProductsSection = ({
         <h2 className="text-3xl font-bold text-foreground mb-4">
           Featured Products
         </h2>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
+        <p className="text-muted-foreground max-w-2xl mx-auto hidden md:block">
           Discover our most popular perfumes and attars, carefully selected for
           their exceptional quality and captivating fragrances.
         </p>

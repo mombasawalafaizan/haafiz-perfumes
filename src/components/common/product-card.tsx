@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useCallback } from "react";
 import Image from "next/image";
 import { ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,37 +23,53 @@ export function ProductCard({ product }: ProductCardProps) {
   const isMobile = useIsMobile();
   const layout = isMobile ? "horizontal" : "vertical";
 
-  const placeholderImage =
-    product.category === "attar"
-      ? "/attar_placeholder.jpg"
-      : "/perfume_placeholder.jpg";
-
-  // Get primary product image
-  const primaryProductImage = product.product_images?.find(
-    (pi) => pi.is_primary
-  );
-  const productImageUrl =
-    (primaryProductImage?.images as { backblaze_url: string })?.backblaze_url ||
-    placeholderImage;
-
-  // Get the lowest price variant for display
-  const lowestPriceVariant = product.product_variants?.reduce(
-    (lowest, current) => (current.price < lowest.price ? current : lowest)
+  // Memoize expensive operations
+  const placeholderImage = useMemo(
+    () =>
+      product.category === "attar"
+        ? "/attar_placeholder.jpg"
+        : "/perfume_placeholder.jpg",
+    [product.category]
   );
 
-  if (!lowestPriceVariant) {
-    return null; // Don't render if no variants
-  }
+  const productImageUrl = useMemo(() => {
+    const primaryProductImage = product.product_images?.find(
+      (pi) => pi.is_primary
+    );
+    return (
+      (primaryProductImage?.images as { backblaze_url: string })
+        ?.backblaze_url || placeholderImage
+    );
+  }, [product.product_images, placeholderImage]);
 
-  const displayPrice = lowestPriceVariant.price;
-  const displayMRP = lowestPriceVariant.mrp;
-  const displaySize = lowestPriceVariant.volume || 50; // Default to 50ml
+  const lowestPriceVariant = useMemo(() => {
+    return product.product_variants?.reduce((lowest, current) =>
+      current.price < lowest.price ? current : lowest
+    );
+  }, [product.product_variants]);
 
-  const discountPercentage = Math.round(
-    ((displayMRP - displayPrice) / displayMRP) * 100
-  );
+  const displayData = useMemo(() => {
+    if (!lowestPriceVariant) return null;
 
-  const handleAddToCart = () => {
+    const displayPrice = lowestPriceVariant.price;
+    const displayMRP = lowestPriceVariant.mrp;
+    const displaySize = lowestPriceVariant.volume || 50;
+    const discountPercentage = Math.round(
+      ((displayMRP - displayPrice) / displayMRP) * 100
+    );
+
+    return {
+      displayPrice,
+      displayMRP,
+      displaySize,
+      discountPercentage,
+    };
+  }, [lowestPriceVariant]);
+
+  const handleAddToCart = useCallback(() => {
+    if (!lowestPriceVariant || !displayData) return;
+
+    const { displayPrice, displayMRP, displaySize } = displayData;
     // Convert IProductDetail to IProduct format for cart
     const productToAdd: IProduct = {
       id: product.id,
@@ -104,7 +121,14 @@ export function ProductCard({ product }: ProductCardProps) {
     //     variant: 'destructive',
     //   });
     // }
-  };
+  }, [product, productImageUrl, displayData, lowestPriceVariant, addItem]);
+
+  if (!lowestPriceVariant || !displayData) {
+    return null; // Don't render if no variants
+  }
+
+  const { displayPrice, displayMRP, displaySize, discountPercentage } =
+    displayData;
 
   return (
     <Card
@@ -120,6 +144,7 @@ export function ProductCard({ product }: ProductCardProps) {
               src={productImageUrl}
               alt={product.name}
               fill
+              sizes="40vw"
               className="object-cover group-hover:scale-110 transition-transform duration-500"
             />
             {discountPercentage > 0 && (
@@ -186,6 +211,7 @@ export function ProductCard({ product }: ProductCardProps) {
               src={productImageUrl}
               alt={product.name}
               fill
+              sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
               className="object-cover group-hover:scale-110 transition-transform duration-500"
             />
             {discountPercentage > 0 && (
