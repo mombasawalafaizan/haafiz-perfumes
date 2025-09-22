@@ -78,6 +78,7 @@ export default function AdminLoginForm() {
                       <Input
                         type="password"
                         placeholder="Enter your password"
+                        className="border-primary"
                         {...field}
                       />
                     </FormControl>

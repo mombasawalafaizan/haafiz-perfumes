@@ -1,14 +1,19 @@
 import { useQuery, UseQueryOptions } from "@tanstack/react-query";
-import { IPaginationParams, IQueryResult } from "@/types/query";
+import { IPaginationParams, IPaginatedQueryResult } from "@/types/query";
 
 // Paginated query hook
 const usePaginatedQuery = <T = any, E = any>(
   queryKey: (string | number | object)[],
-  actionFn: (pagination: IPaginationParams) => Promise<IQueryResult<T>>,
+  actionFn: (
+    pagination: IPaginationParams
+  ) => Promise<IPaginatedQueryResult<T>>,
   pagination: IPaginationParams = {},
-  options?: Omit<UseQueryOptions<IQueryResult<T>, E>, "queryKey" | "queryFn">
+  options?: Omit<
+    UseQueryOptions<IPaginatedQueryResult<T>, E>,
+    "queryKey" | "queryFn"
+  >
 ) => {
-  return useQuery<IQueryResult<T>, E>({
+  return useQuery<IPaginatedQueryResult<T>, E>({
     queryKey: [...queryKey, pagination],
     queryFn: async () => {
       const response = await actionFn(pagination);

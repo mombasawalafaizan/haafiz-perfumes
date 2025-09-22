@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, StarIcon, EyeIcon, CheckIcon, XIcon } from "lucide-react";
+import { Plus, StarIcon, CheckIcon, XIcon, EditIcon } from "lucide-react";
 import { IProduct } from "@/types/product";
 import { getProducts } from "@/lib/actions/product";
 import usePaginatedQuery from "@/hooks/usePaginatedQuery";
@@ -12,6 +12,7 @@ import { ColumnDef, SortingState } from "@tanstack/react-table";
 import DataTable from "@/components/common/DataTable/DataTable";
 import { IPaginationParams } from "@/types/query";
 import { Badge } from "@/components/ui/badge";
+import EditProduct from "@/components/admin/edit-product";
 
 const CategoryOptions = [
   { label: "Perfume", value: "perfume" },
@@ -56,6 +57,10 @@ export default function AdminProductsPage() {
   const [search, setSearch] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
   const [filterState, setFilterState] = useState<IFilterState>({});
+  const [isEditProductOpen, setIsEditProductOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<
+    IProduct | undefined
+  >();
 
   const params: IPaginationParams = useMemo(
     () => ({
@@ -71,13 +76,29 @@ export default function AdminProductsPage() {
     [page, pageSize, search, sorting, filterState]
   );
 
-  const { data, isLoading, error } = usePaginatedQuery(
+  const { data, isLoading, error, refetch } = usePaginatedQuery(
     ["products"],
     getProducts,
     params
   );
 
   useEffect(() => setPage(1), [search, sorting, filterState]);
+
+  const handleAddProduct = () => {
+    setSelectedProduct(undefined);
+    setIsEditProductOpen(true);
+  };
+
+  const handleEditProduct = (product: IProduct) => {
+    setSelectedProduct(product);
+    setIsEditProductOpen(true);
+  };
+
+  const handleCloseEditProduct = (saved?: boolean) => {
+    setIsEditProductOpen(false);
+    setSelectedProduct(undefined);
+    if (saved === true) refetch();
+  };
 
   const columns: ColumnDef<IProduct>[] = useMemo(
     () => [
@@ -157,16 +178,16 @@ export default function AdminProductsPage() {
       {
         accessorKey: "actions",
         header: "Actions",
-        cell: ({}) => (
+        cell: ({ row }) => (
           <div className="flex flex-row gap-2 justify-center">
             <Button
               variant="outline"
               size="xs"
               className="text-xs"
-              onClick={() => null}
+              onClick={() => handleEditProduct(row.original)}
             >
-              <EyeIcon className="size-3" />
-              View
+              <EditIcon className="size-3" />
+              Edit
             </Button>
           </div>
         ),
@@ -190,7 +211,10 @@ export default function AdminProductsPage() {
             Manage your product inventory and details
           </p>
         </div>
-        <Button className="flex items-center space-x-2">
+        <Button
+          className="flex items-center space-x-2"
+          onClick={handleAddProduct}
+        >
           <Plus className="h-4 w-4" />
           <span>Add Product</span>
         </Button>
@@ -229,6 +253,15 @@ export default function AdminProductsPage() {
         columnConfig={{ enableVisibility: true, enableResizing: true }}
         ui={{ loading: isLoading, emptyText: "No products found" }}
       />
+
+      {/* Edit Product Component */}
+      {isEditProductOpen && (
+        <EditProduct
+          isOpen={true}
+          onClose={handleCloseEditProduct}
+          product={selectedProduct}
+        />
+      )}
     </div>
   );
 }

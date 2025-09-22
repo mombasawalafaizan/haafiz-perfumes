@@ -43,8 +43,9 @@ export function ProductCard({ product }: ProductCardProps) {
   }, [product.product_images, placeholderImage]);
 
   const lowestPriceVariant = useMemo(() => {
-    return product.product_variants?.reduce((lowest, current) =>
-      current.price < lowest.price ? current : lowest
+    return product.product_variants?.reduce(
+      (lowest, current) => (current.price < lowest.price ? current : lowest),
+      product.product_variants?.[0]
     );
   }, [product.product_variants]);
 

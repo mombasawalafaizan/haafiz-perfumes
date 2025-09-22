@@ -48,6 +48,25 @@ export interface ISupabaseFilterConfig<T = any> {
 export type TFilterValue = string | number | boolean | null;
 
 export interface IQueryResult<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
+export interface IPaginatedQueryResult<T> {
+  data: T[] | null;
+  count: number | null;
+  error: any;
+  pagination: {
+    page: number;
+    limit: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+}
+
+export interface IPaginatedQueryResult<T> {
   data: T[] | null;
   count: number | null;
   error: any;

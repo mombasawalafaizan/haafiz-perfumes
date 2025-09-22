@@ -28,6 +28,7 @@ const FeaturedProductsSection = ({
 
     return () => clearInterval(timer);
   }, [api]);
+
   return (
     <section className="container mx-auto px-4 py-16">
       <div className="text-center mb-8">

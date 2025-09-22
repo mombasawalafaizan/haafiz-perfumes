@@ -1,12 +1,9 @@
-import { getProducts } from "@/lib/actions/product";
+import { getProductImages } from "@/lib/actions/product";
 
 export default async function SupabaseQueryPage() {
-  const products = await getProducts({
-    page: 1,
-    page_size: 4,
-    updated_at_gte: new Date("2025-09-11").toISOString(),
-  });
-  console.log(products);
+  const products = await getProductImages(
+    "f60a567a-f373-4ee4-b738-a91cdb35f5d3"
+  );
   return <div>Supabase Query</div>;
 
   return (

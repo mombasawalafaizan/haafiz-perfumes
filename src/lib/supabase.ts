@@ -1,7 +1,7 @@
 import {
   IPaginationParams,
   ISupabaseQueryConfig,
-  IQueryResult,
+  IPaginatedQueryResult,
   TFilterValue,
   ISupabaseFilterConfig,
 } from "@/types/query";
@@ -19,7 +19,7 @@ export async function querySupabase<T = any>(
   tableName: string,
   uiParams: IPaginationParams,
   config: ISupabaseQueryConfig
-): Promise<IQueryResult<T>> {
+): Promise<IPaginatedQueryResult<T>> {
   // Extract parameters from UI params and config
   const page = uiParams.page || 1;
   const limit = uiParams.page_size || 10;

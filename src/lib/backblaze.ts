@@ -133,7 +133,7 @@ class BackblazeService {
         fileId,
         fileName,
         downloadUrl,
-        backblazeKey: fileName, // In B2, the key is the fileName
+        backblazeKey: fileId, // In B2, the key is the fileId
         fileSize: contentLength,
         mimeType: contentType,
         altText: options.altText ?? options.filename ?? uniqueFilename,

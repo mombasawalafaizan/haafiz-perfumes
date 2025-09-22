@@ -1,6 +1,9 @@
 "use server";
 
-import { uploadImageToBackblaze } from "@/lib/backblaze";
+import {
+  deleteImageFromBackblaze,
+  uploadImageToBackblaze,
+} from "@/lib/backblaze";
 
 export async function uploadFile(formData: FormData) {
   try {
@@ -35,6 +38,23 @@ export async function uploadFile(formData: FormData) {
     return {
       success: false,
       error: "Upload failed",
+      details: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+export async function deleteFile(fileId: string, fileName: string) {
+  try {
+    await deleteImageFromBackblaze(fileId, fileName);
+    return {
+      success: true,
+      message: "File deleted successfully",
+    };
+  } catch (error) {
+    console.error("Delete error:", error);
+    return {
+      success: false,
+      error: "Delete failed",
       details: error instanceof Error ? error.message : "Unknown error",
     };
   }

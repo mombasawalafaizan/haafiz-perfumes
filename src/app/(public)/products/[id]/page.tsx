@@ -6,6 +6,8 @@ import { getProductBySlug } from "@/lib/actions/product";
 import { ProductImageCarousel } from "@/components/feature/product-image-carousel";
 import { ProductPricingAndCart } from "@/components/feature/product-pricing-and-cart";
 
+export const dynamic = "force-dynamic"; // For current frequent addition of products
+
 interface ProductDetailPageProps {
   params: Promise<{
     id: string;
@@ -72,23 +74,9 @@ export default async function ProductDetailPage({
     primaryProductImage || fallbackImage || "/placeholder-product.jpg";
 
   // Get all product images for carousel
-  const productImages = product.product_images
-    ?.map((img) => (img.images as { backblaze_url: string })?.backblaze_url)
-    .filter(Boolean) || [productImageUrl];
-
-  // Get all variant images for carousel
-  const variantImages =
-    product.product_variants?.flatMap(
-      (variant) =>
-        variant.variant_images
-          ?.map(
-            (img) => (img.images as { backblaze_url: string })?.backblaze_url
-          )
-          .filter(Boolean) || []
-    ) || [];
-
-  // Combine all images, removing duplicates
-  const allImages = [...new Set([...productImages, ...variantImages])];
+  const productImages = product.product_images?.map(
+    (img) => (img.images as { backblaze_url: string })?.backblaze_url
+  ) || [productImageUrl];
 
   // Calculate discount percentage from the first variant for image carousel
   const firstVariant = product.product_variants?.[0];
@@ -110,7 +98,7 @@ export default async function ProductDetailPage({
           {/* Product Image */}
           <div className="space-y-4">
             <ProductImageCarousel
-              images={allImages}
+              images={productImages}
               productName={product.name}
               discountPercentage={discountPercentage}
             />

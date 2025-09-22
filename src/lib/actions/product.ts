@@ -1,7 +1,19 @@
 "use server";
 import { querySupabase, supabase } from "@/lib/supabase";
-import { IProduct, IProductDetail } from "@/types/product";
-import { IPaginationParams, ISupabaseQueryConfig } from "@/types/query";
+import { revalidatePath } from "next/cache";
+import {
+  IProduct,
+  IProductDetail,
+  IProductVariant,
+  IProductImage,
+  IImage,
+  IVariantImage,
+} from "@/types/product";
+import {
+  IPaginationParams,
+  IQueryResult,
+  ISupabaseQueryConfig,
+} from "@/types/query";
 
 const PRODUCT_DETAIL_QUERY = `
         id,
@@ -221,43 +233,326 @@ export async function getProducts(params: IPaginationParams) {
   return querySupabase<IProduct>("products", params, config);
 }
 
-// export async function getAllProducts(): Promise<IProductDetail[]> {
-//   try {
-//     const { data, error } = await supabase
-//       .from("products")
-//       .select(PRODUCT_DETAIL_QUERY)
-//       .order("name");
+// Product CRUD operations
+export async function createProduct(
+  productData: Partial<IProduct>
+): Promise<{ success: boolean; data: IProduct | null; error: string | null }> {
+  try {
+    const { data, error } = await supabase
+      .from("products")
+      .insert([productData])
+      .select()
+      .single();
 
-//     if (error) {
-//       console.error("Error fetching all products:", error);
-//       throw new Error(`Failed to fetch products: ${error.message}`);
-//     }
+    if (error) {
+      console.error("Error creating product:", error);
+      throw new Error(`Failed to create product: ${error.message}`);
+    }
 
-//     // Filter to only include variants with the least price for each product
-//     const filteredProducts =
-//       data?.map((product) => {
-//         if (
-//           !product.product_variants ||
-//           product.product_variants.length === 0
-//         ) {
-//           return product;
-//         }
+    revalidatePath(`/collections/${productData.category}`);
+    revalidatePath("/products/[id]");
+    return { success: true, data, error: null };
+  } catch (error) {
+    console.error("Error in createProduct:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+      data: null,
+    };
+  }
+}
 
-//         // Find the variant with the minimum price
-//         const minPriceVariant = product.product_variants.reduce(
-//           (min, current) => (current.price < min.price ? current : min)
-//         );
+export async function updateProduct(
+  id: string,
+  productData: Partial<IProduct>
+) {
+  try {
+    const { data, error } = await supabase
+      .from("products")
+      .update(productData)
+      .eq("id", id)
+      .select()
+      .single();
 
-//         // Return product with only the minimum price variant
-//         return {
-//           ...product,
-//           product_variants: [minPriceVariant],
-//         };
-//       }) || [];
+    if (error) {
+      console.error("Error updating product:", error);
+      throw new Error(`Failed to update product: ${error.message}`);
+    }
 
-//     return filteredProducts;
-//   } catch (error) {
-//     console.error("Error in getAllProducts:", error);
-//     throw error;
-//   }
-// }
+    revalidatePath(`/collections/${productData.category}`);
+    revalidatePath("/products/[id]");
+    return { success: true, data };
+  } catch (error) {
+    console.error("Error in updateProduct:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+export async function deleteProduct(id: string) {
+  try {
+    const { error } = await supabase.from("products").delete().eq("id", id);
+
+    if (error) {
+      console.error("Error deleting product:", error);
+      throw new Error(`Failed to delete product: ${error.message}`);
+    }
+
+    revalidatePath("/collections/perfumes");
+    revalidatePath("/collections/attars");
+    revalidatePath("/products/[id]");
+    return { success: true };
+  } catch (error) {
+    console.error("Error in deleteProduct:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+// Product Variant CRUD operations
+export async function fetchProductVariants(
+  productId: string
+): Promise<IQueryResult<IProductVariant[]>> {
+  const { data, error } = await supabase
+    .from("product_variants")
+    .select("*")
+    .eq("product_id", productId);
+
+  if (error) {
+    console.error("Error fetching product variants:", error);
+    return { success: false, data: undefined, error: error.message };
+  }
+
+  return { success: true, data, error: undefined };
+}
+
+export async function bulkUpsertProductVariants(
+  variants: Partial<IProductVariant>[]
+): Promise<IQueryResult<IProductVariant[]>> {
+  try {
+    const { data, error } = await supabase
+      .from("product_variants")
+      .upsert(variants, { onConflict: "id", defaultToNull: false })
+      .select();
+
+    if (error) {
+      console.error("Error upserting variants:", error);
+      return { success: false, error: error.details };
+    }
+
+    revalidatePath("/collections/perfumes");
+    revalidatePath("/collections/attars");
+    revalidatePath("/products/[id]");
+    return { success: true, data };
+  } catch (error) {
+    console.error("Error in bulkUpsertProductVariants:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+export async function deleteProductVariant(id: string) {
+  try {
+    const { error } = await supabase
+      .from("product_variants")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      console.error("Error deleting variant:", error);
+      return { success: false, error: error.message };
+    }
+
+    revalidatePath("/collections/perfumes");
+    revalidatePath("/collections/attars");
+    revalidatePath("/products/[id]");
+    return { success: true };
+  } catch (error) {
+    console.error("Error in deleteProductVariant:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+// Product Images operations
+export async function getProductImages(
+  productId: string
+): Promise<IQueryResult<(Partial<IProductImage> & { images: IImage })[]>> {
+  const { data, error } = await supabase
+    .from("product_images")
+    .select(
+      `
+      id,
+      display_order,
+      is_primary,
+      images (*)
+    `
+    )
+    .eq("product_id", productId);
+
+  if (error) {
+    console.error("Error fetching product images:", error);
+    return { success: false, data: undefined, error: error.message };
+  }
+
+  return {
+    success: true,
+    data: data as unknown as (Partial<IProductImage> & {
+      images: IImage;
+    })[],
+    error: undefined,
+  };
+}
+
+export async function saveImage(
+  productImage: Partial<IImage>
+): Promise<IQueryResult<IImage>> {
+  const { data, error } = await supabase
+    .from("images")
+    .insert([productImage])
+    .select()
+    .single();
+
+  revalidatePath("/products/[id]");
+  if (error) {
+    console.error("Error creating product image:", error);
+    return { success: false, error: error.message };
+  }
+
+  return { success: true, data, error: undefined };
+}
+
+export async function deleteProductImage(
+  id: string
+): Promise<IQueryResult<null>> {
+  const { error } = await supabase.from("images").delete().eq("id", id);
+
+  if (error) {
+    console.error("Error deleting product image:", error);
+    return { success: false, data: undefined, error: error.message };
+  }
+
+  revalidatePath("/products/[id]");
+  return { success: true, data: undefined, error: undefined };
+}
+
+// Product Images operations
+export async function bulkUpsertProductImages(
+  productImages: Partial<IProductImage>[]
+): Promise<IQueryResult<IProductImage[]>> {
+  try {
+    const { data, error } = await supabase
+      .from("product_images")
+      .upsert(productImages, {
+        onConflict: "id",
+        defaultToNull: false,
+      })
+      .select();
+
+    revalidatePath("/products/[id]");
+    if (error) {
+      console.error("Error upserting product images:", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, data };
+  } catch (error) {
+    console.error("Error in bulkUpsertProductImages:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+// Variant Images operations
+export async function getVariantImages(
+  variantId: string
+): Promise<IQueryResult<IVariantImage[]>> {
+  const { data, error } = await supabase
+    .from("variant_images")
+    .select("*")
+    .eq("variant_id", variantId);
+
+  if (error) {
+    console.error("Error fetching variant images:", error);
+    return { success: false, data: undefined, error: error.message };
+  }
+
+  return { success: true, data, error: undefined };
+}
+
+export async function bulkUpsertVariantImages(
+  variantImages: Partial<IVariantImage>[]
+): Promise<IQueryResult<IVariantImage[]>> {
+  try {
+    const { data, error } = await supabase
+      .from("variant_images")
+      .upsert(variantImages, { onConflict: "id", defaultToNull: false })
+      .select();
+
+    revalidatePath("/products/[id]");
+    if (error) {
+      console.error("Error upserting variant images:", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, data };
+  } catch (error) {
+    console.error("Error in bulkUpsertVariantImages:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+export async function replaceVariantImages(
+  variantId: string,
+  variantImages: Partial<IVariantImage>[]
+): Promise<IQueryResult<IVariantImage[]>> {
+  try {
+    // First, delete all existing variant images for this variant
+    const { error: deleteError } = await supabase
+      .from("variant_images")
+      .delete()
+      .eq("variant_id", variantId);
+
+    revalidatePath("/products/[id]");
+    if (deleteError) {
+      console.error("Error deleting existing variant images:", deleteError);
+      return { success: false, error: deleteError.message };
+    }
+
+    // Then insert the new variant images
+    if (variantImages.length > 0) {
+      const { data, error } = await supabase
+        .from("variant_images")
+        .insert(variantImages)
+        .select();
+
+      if (error) {
+        console.error("Error inserting new variant images:", error);
+        return { success: false, error: error.message };
+      }
+
+      return { success: true, data };
+    }
+
+    return { success: true, data: [] };
+  } catch (error) {
+    console.error("Error in replaceVariantImages:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}

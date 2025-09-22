@@ -3,6 +3,8 @@ import { ProductCard } from "@/components/common/product-card";
 import { SortSelect } from "@/components/common/sort-select";
 import { getProductsByCategory } from "@/lib/actions/product";
 
+export const dynamic = "force-dynamic"; // For current frequent addition of products
+
 export const metadata: Metadata = {
   title: "Authentic Attars | Haafiz Perfumes",
   description:
