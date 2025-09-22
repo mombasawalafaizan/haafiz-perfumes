@@ -1,243 +1,343 @@
+import {
+  IPaginationParams,
+  ISupabaseQueryConfig,
+  IPaginatedQueryResult,
+  TFilterValue,
+  ISupabaseFilterConfig,
+} from "@/types/query";
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl = process.env.SUPABASE_URL!;
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY!;
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Database types based on the PRD schema
-export interface Product {
-  id: string;
-  name: string;
-  slug: string;
-  category: "perfume" | "attar";
-  fragrance_family: string;
-  description: string;
-  top_notes: string;
-  middle_notes: string;
-  base_notes: string;
-  additional_notes: string;
-  mrp: number;
-  price: number;
-  created_at: string;
-}
+/**
+ * Generic Supabase query function with pagination, sorting, searching, and filtering
+ */
+export async function querySupabase<T = any>(
+  tableName: string,
+  uiParams: IPaginationParams,
+  config: ISupabaseQueryConfig
+): Promise<IPaginatedQueryResult<T>> {
+  // Extract parameters from UI params and config
+  const page = uiParams.page || 1;
+  const limit = uiParams.page_size || 10;
+  const search = uiParams.search;
+  const ordering = uiParams.ordering;
 
-export interface ProductVariant {
-  id: string;
-  product_id: string;
-  quality: "Standard" | "Premium" | "Luxury";
-  price: number;
-  mrp: number;
-  stock: number;
-  sku: string;
-}
+  // Parse ordering (format: "field" for asc, "-field" for desc)
+  let sortBy: string | undefined;
+  let sortOrder: "asc" | "desc" = "asc";
+  if (ordering) {
+    if (ordering.startsWith("-")) {
+      sortBy = ordering.substring(1);
+      sortOrder = "desc";
+    } else {
+      sortBy = ordering;
+      sortOrder = "asc";
+    }
+  }
 
-export interface ProductImage {
-  id: string;
-  product_id: string;
-  bucket_id: string;
-  path: string;
-  public_url: string;
-  is_primary: boolean;
-  uploaded_by?: string;
-  inserted_at: string;
-}
+  // Extract filters from UI params (exclude pagination, search, ordering)
+  const filters: Record<string, TFilterValue> = {};
+  for (const [key, value] of Object.entries(uiParams)) {
+    if (
+      !["page", "page_size", "pagination", "ordering", "search"].includes(key)
+    ) {
+      filters[key] = value as TFilterValue;
+    }
+  }
 
-export interface Order {
-  id: string;
-  order_number: string;
-  customer_name: string;
-  customer_phone: string;
-  customer_email: string;
-  shipping_address: {
-    street: string;
-    city: string;
-    pincode: string;
-    state: string;
+  // Use config values
+  const searchFields = config.searchFields || [];
+  const sortingFields = config.sortingFields || [];
+  const filterFields = config.filterFields || [];
+  const select = config.select || "*";
+  const count = config.count || "exact";
+
+  // Build the base query
+  let query = supabase.from(tableName).select(select, { count });
+
+  // Apply filters
+  if (Object.keys(filters).length > 0) {
+    query = applyFilters(query, filters, filterFields);
+  }
+
+  // Apply search
+  if (search && searchFields.length > 0) {
+    query = applySearch(query, search, searchFields);
+  }
+
+  // Apply sorting
+  if (sortBy) {
+    query = applySorting(query, sortBy, sortOrder, sortingFields);
+  }
+
+  // Apply pagination
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+  query = query.range(from, to);
+
+  // Execute query
+  const { data, error, count: totalCount } = await query;
+
+  // Calculate pagination info
+  const totalPages = totalCount ? Math.ceil(totalCount / limit) : 0;
+  const hasNext = page < totalPages;
+  const hasPrev = page > 1;
+
+  return {
+    data: data as T[] | null,
+    count: totalCount,
+    error,
+    pagination: {
+      page,
+      limit,
+      totalPages,
+      hasNext,
+      hasPrev,
+    },
   };
-  order_items: Array<{
-    variant_id: string;
-    quantity: number;
-    price: number;
-    mrp: number;
-  }>;
-  payment_mode: "cod" | "razorpay";
-  payment_status: "pending" | "paid" | "failed";
-  razorpay_order_id?: string;
-  razorpay_payment_id?: string;
-  shipping_status: "pending" | "booked" | "shipped" | "delivered";
-  bigship_awb?: string;
-  total_amount: number;
-  created_at: string;
 }
 
-// API functions
-export const productsApi = {
-  async getAll() {
-    const { data, error } = await supabase
-      .from("products")
-      .select(
-        `
-        *,
-        product_variants (*),
-        product_images (*)
-      `
-      )
-      .order("created_at", { ascending: false });
+const dateSuffixes = new RegExp("(_gte|_lte|_lt|_gt)");
+/**
+ * Apply filters to the query
+ */
+function applyFilters(
+  query: any,
+  filters: Record<string, TFilterValue>,
+  filterFields: ISupabaseFilterConfig[]
+) {
+  for (const [field, value] of Object.entries(filters)) {
+    let filterKey = field;
+    if (value === null || value === undefined || value === "") continue;
 
-    if (error) throw error;
-    return data;
-  },
+    // Remove _gte, _lte, _lt, _gt suffixes as this is a date type
+    let isDate = false;
+    if (dateSuffixes.test(field)) {
+      filterKey = filterKey.replace(dateSuffixes, "");
+      isDate = true;
+    }
 
-  async getByCategory(category: "perfume" | "attar") {
-    const { data, error } = await supabase
-      .from("products")
-      .select(
-        `
-        *,
-        product_variants (*),
-        product_images (*)
-      `
-      )
-      .eq("category", category)
-      .order("created_at", { ascending: false });
+    const config = filterFields.find((f) => {
+      if (isDate) {
+        return (
+          (f.field as string) + (f.operator ? `_${f.operator}` : "") === field
+        );
+      } else {
+        return (f.field as string) === field;
+      }
+    });
+    if (!config) continue; // Skip if field is not configured
 
-    if (error) throw error;
-    return data;
-  },
+    const operator = config?.operator || getDefaultOperator(config?.type);
 
-  async getBySlug(slug: string) {
-    const { data, error } = await supabase
-      .from("products")
-      .select(
-        `
-        *,
-        product_variants (*),
-        product_images (*)
-      `
-      )
-      .eq("slug", slug)
-      .single();
+    switch (config.type) {
+      case "string":
+        if (operator === "like" || operator === "ilike") {
+          query = query[operator](config?.field, `%${value}%`);
+        } else {
+          query = query[operator](config?.field, value);
+        }
+        break;
 
-    if (error) throw error;
-    return data;
-  },
+      case "number":
+        query = query[operator](config?.field, Number(value));
+        break;
 
-  async getFeatured() {
-    const { data, error } = await supabase
-      .from("products")
-      .select(
-        `
-        *,
-        product_variants (*),
-        product_images (*)
-      `
-      )
-      .eq("featured", true)
-      .order("created_at", { ascending: false })
-      .limit(8);
+      case "boolean":
+        query = query.eq(config?.field, Boolean(value));
+        break;
 
-    if (error) throw error;
-    return data;
-  },
-};
+      case "date":
+        const dateValue = value;
+        query = query[operator](config?.field, dateValue);
+        break;
 
-export const ordersApi = {
-  async create(orderData: Omit<Order, "id" | "created_at">) {
-    const { data, error } = await supabase
-      .from("orders")
-      .insert(orderData)
-      .select()
-      .single();
+      case "enum":
+        if (config.allowedValues && config.allowedValues.includes(value)) {
+          query = query.eq(config?.field, value);
+        }
+        break;
 
-    if (error) throw error;
-    return data;
-  },
+      case "array":
+        if (Array.isArray(value)) {
+          if (operator === "contains") {
+            query = query.contains(config?.field, value);
+          } else if (operator === "overlaps") {
+            query = query.overlaps(config?.field, value);
+          } else {
+            query = query.in(config?.field, value);
+          }
+        }
+        break;
 
-  async getById(id: string) {
-    const { data, error } = await supabase
-      .from("orders")
-      .select("*")
-      .eq("id", id)
-      .single();
+      default:
+        query = query.eq(config?.field, value);
+    }
+  }
 
-    if (error) throw error;
-    return data;
-  },
+  return query;
+}
 
-  async getByOrderNumber(orderNumber: string) {
-    const { data, error } = await supabase
-      .from("orders")
-      .select("*")
-      .eq("order_number", orderNumber)
-      .single();
+/**
+ * Apply search to multiple fields
+ */
+function applySearch(query: any, searchTerm: string, searchFields: string[]) {
+  if (!searchTerm.trim()) return query;
 
-    if (error) throw error;
-    return data;
-  },
+  // Create OR conditions for search across multiple fields
+  const searchConditions = searchFields
+    .map((field) => `${field}.ilike.%${searchTerm}%`)
+    .join(",");
 
-  async updatePaymentStatus(
-    id: string,
-    paymentStatus: Order["payment_status"],
-    razorpayIds?: { order_id?: string; payment_id?: string }
-  ) {
-    const updateData: Partial<Order> = { payment_status: paymentStatus };
-    if (razorpayIds?.order_id)
-      updateData.razorpay_order_id = razorpayIds.order_id;
-    if (razorpayIds?.payment_id)
-      updateData.razorpay_payment_id = razorpayIds.payment_id;
+  return query.or(searchConditions);
+}
 
-    const { data, error } = await supabase
-      .from("orders")
-      .update(updateData)
-      .eq("id", id)
-      .select()
-      .single();
+/**
+ * Apply sorting with validation
+ */
+function applySorting(
+  query: any,
+  sortBy: string,
+  sortOrder: "asc" | "desc",
+  sortingFields: string[]
+) {
+  // Validate sorting field
+  if (sortingFields.length > 0 && !sortingFields.includes(sortBy)) {
+    console.warn(
+      `Sorting field '${sortBy}' is not allowed. Allowed fields: ${sortingFields.join(
+        ", "
+      )}`
+    );
+    return query;
+  }
 
-    if (error) throw error;
-    return data;
-  },
-};
+  return query.order(sortBy, { ascending: sortOrder === "asc" });
+}
 
-export const storageApi = {
-  async uploadProductImage(file: File, productId: string, isPrimary = false) {
-    const fileExt = file.name.split(".").pop();
-    const fileName = `${productId}/${Date.now()}.${fileExt}`;
+/**
+ * Get default operator based on field type
+ */
+function getDefaultOperator(type: ISupabaseFilterConfig["type"]): string {
+  switch (type) {
+    case "string":
+      return "ilike";
+    case "number":
+    case "boolean":
+    case "date":
+    case "enum":
+      return "eq";
+    case "array":
+      return "in";
+    default:
+      return "eq";
+  }
+}
 
-    const { error } = await supabase.storage
-      .from("product-images")
-      .upload(fileName, file);
+// Usage examples:
 
-    if (error) throw error;
+/**
+ * Example 1: Simple product listing with pagination and search
+ */
+// export async function getProducts(uiParams: IPaginationParams) {
+//   const config: SupabaseQueryConfig = {
+//     searchFields: ["name", "description", "brand"],
+//     sortingFields: ["name", "price", "created_at"],
+//     filterFields: {
+//       category: {
+//         type: "enum",
+//         allowedValues: ["electronics", "clothing", "books"],
+//       },
+//       price: { type: "number", operator: "lte" },
+//       in_stock: { type: "boolean" },
+//       created_at: { type: "date" },
+//     },
+//   };
 
-    // Get public URL
-    const { data: urlData } = supabase.storage
-      .from("product-images")
-      .getPublicUrl(fileName);
+//   return querySupabase<Product>("products", uiParams, config);
+// }
 
-    // Save to database
-    const { data: imageData, error: dbError } = await supabase
-      .from("product_images")
-      .insert({
-        product_id: productId,
-        bucket_id: "product-images",
-        path: fileName,
-        public_url: urlData.publicUrl,
-        is_primary: isPrimary,
-      })
-      .select()
-      .single();
+// /**
+//  * Example 2: Admin orders with complex filtering
+//  */
+// export async function getOrders(uiParams: IPaginationParams) {
+//   const config: SupabaseQueryConfig = {
+//     select:
+//       "*, customer:customers(name, email), order_items:order_items(*, product:products(name))",
+//     searchFields: ["order_number", "customer.name", "customer.email"],
+//     sortingFields: ["created_at", "total_amount", "status"],
+//     filterFields: {
+//       status: {
+//         type: "enum",
+//         allowedValues: [
+//           "pending",
+//           "processing",
+//           "shipped",
+//           "delivered",
+//           "cancelled",
+//         ],
+//       },
+//       total_amount: { type: "number", operator: "gte" },
+//       created_at: { type: "date" },
+//       payment_status: { type: "boolean" },
+//       tags: { type: "array", operator: "contains" },
+//     },
+//   };
 
-    if (dbError) throw dbError;
-    return imageData;
-  },
+//   return querySupabase<Order>("orders", uiParams, config);
+// }
 
-  async deleteProductImage(imageId: string) {
-    const { error } = await supabase
-      .from("product_images")
-      .delete()
-      .eq("id", imageId);
+// /**
+//  * Example 3: Customer dashboard - user's orders
+//  */
+// export async function getUserOrders(userId: string, uiParams: IPaginationParams) {
+//   // Add user_id to the UI params
+//   const paramsWithUserId: IPaginationParams = {
+//     ...uiParams,
+//     user_id: userId,
+//   };
 
-    if (error) throw error;
-  },
-};
+//   const config: ISupabaseQueryConfig = {
+//     searchFields: ["order_number"],
+//     sortingFields: ["created_at", "total_amount"],
+//     filterFields: {
+//       user_id: { type: "string" },
+//       status: {
+//         type: "enum",
+//         allowedValues: [
+//           "pending",
+//           "processing",
+//           "shipped",
+//           "delivered",
+//           "cancelled",
+//         ],
+//       },
+//       created_at: { type: "date" },
+//     },
+//   };
+
+//   return querySupabase<Order>("orders", paramsWithUserId, config);
+// }
+
+/**
+ * Type-safe helper for creating Supabase query configurations
+ */
+export function createQueryConfig(
+  config: ISupabaseQueryConfig
+): ISupabaseQueryConfig {
+  return config;
+}
+
+/**
+ * Higher-order function to create type-safe query functions
+ */
+export function createQueryFunction<T = any>(
+  tableName: string,
+  config: ISupabaseQueryConfig
+) {
+  return (uiParams: IPaginationParams) =>
+    querySupabase<T>(tableName, uiParams, config);
+}
