@@ -25,6 +25,7 @@ const PRODUCT_DETAIL_QUERY = `
         top_notes,
         middle_notes,
         base_notes,
+        is_featured,
         additional_notes,
         is_featured,
         product_variants (
@@ -124,7 +125,7 @@ export async function getProductsByCategory(
 
     // Filter to only include variants with the least price for each product
     const filteredProducts =
-      allProducts?.map((product) => {
+      (allProducts?.map((product) => {
         if (
           !product.product_variants ||
           product.product_variants.length === 0
@@ -142,7 +143,7 @@ export async function getProductsByCategory(
           ...product,
           product_variants: [minPriceVariant],
         };
-      }) || [];
+      }) as unknown as IProductDetail[]) || [];
 
     // Apply sorting based on sortOption
     const sortedProducts = applySorting(filteredProducts, sortOption);
@@ -186,7 +187,7 @@ export async function getFeaturedProducts(): Promise<IProductDetail[]> {
         };
       }) || [];
 
-    return filteredProducts;
+    return filteredProducts as unknown as IProductDetail[];
   } catch (error) {
     console.error("Error in getProductsByCategory:", error);
     throw error;
@@ -205,7 +206,7 @@ export async function getProductBySlug(slug: string): Promise<IProductDetail> {
       throw new Error(`Failed to fetch product by slug: ${error.message}`);
     }
 
-    return data?.[0] || null;
+    return (data?.[0] as unknown as IProductDetail) || null;
   } catch (error) {
     console.error("Error in getProductBySlug:", error);
     throw error;
@@ -214,7 +215,31 @@ export async function getProductBySlug(slug: string): Promise<IProductDetail> {
 
 export async function getProducts(params: IPaginationParams) {
   const config: ISupabaseQueryConfig = {
-    searchFields: ["name", "description"],
+    select: `
+        id,
+        name,
+        slug,
+        category,
+        created_at,
+        updated_at,
+        is_featured,
+        product_variants (
+          product_quality,
+          price,
+          volume,
+          variant_images (
+            images (
+              backblaze_url
+            )
+          )
+        ),
+        product_images (
+          images (
+            backblaze_url
+          )
+        )
+      `,
+    searchFields: ["name"],
     sortingFields: ["name", "created_at", "updated_at"],
     filterFields: [
       {
@@ -230,7 +255,7 @@ export async function getProducts(params: IPaginationParams) {
     ],
   };
 
-  return querySupabase<IProduct>("products", params, config);
+  return querySupabase<IProductDetail>("products", params, config);
 }
 
 // Product CRUD operations
@@ -250,7 +275,7 @@ export async function createProduct(
     }
 
     revalidatePath(`/collections/${productData.category}`);
-    revalidatePath("/products/[id]");
+    revalidatePath("/products/[id]", "page");
     return { success: true, data, error: null };
   } catch (error) {
     console.error("Error in createProduct:", error);
@@ -280,7 +305,7 @@ export async function updateProduct(
     }
 
     revalidatePath(`/collections/${productData.category}`);
-    revalidatePath("/products/[id]");
+    revalidatePath("/products/[id]", "page");
     return { success: true, data };
   } catch (error) {
     console.error("Error in updateProduct:", error);
@@ -291,7 +316,7 @@ export async function updateProduct(
   }
 }
 
-export async function deleteProduct(id: string) {
+export async function deleteProduct(id: string, productMeta?: IProductDetail) {
   try {
     const { error } = await supabase.from("products").delete().eq("id", id);
 
@@ -300,9 +325,14 @@ export async function deleteProduct(id: string) {
       throw new Error(`Failed to delete product: ${error.message}`);
     }
 
-    revalidatePath("/collections/perfumes");
-    revalidatePath("/collections/attars");
-    revalidatePath("/products/[id]");
+    if (productMeta) {
+      revalidatePath(`/products/${productMeta.slug}`, "page");
+      revalidatePath(`/collections/${productMeta.category}`);
+    } else {
+      revalidatePath("/products/[id]", "page");
+      revalidatePath("/collections/attars");
+      revalidatePath("/collections/perfumes");
+    }
     return { success: true };
   } catch (error) {
     console.error("Error in deleteProduct:", error);
@@ -346,7 +376,7 @@ export async function bulkUpsertProductVariants(
 
     revalidatePath("/collections/perfumes");
     revalidatePath("/collections/attars");
-    revalidatePath("/products/[id]");
+    revalidatePath("/products/[id]", "page");
     return { success: true, data };
   } catch (error) {
     console.error("Error in bulkUpsertProductVariants:", error);
@@ -371,7 +401,7 @@ export async function deleteProductVariant(id: string) {
 
     revalidatePath("/collections/perfumes");
     revalidatePath("/collections/attars");
-    revalidatePath("/products/[id]");
+    revalidatePath("/products/[id]", "page");
     return { success: true };
   } catch (error) {
     console.error("Error in deleteProductVariant:", error);
@@ -421,7 +451,7 @@ export async function saveImage(
     .select()
     .single();
 
-  revalidatePath("/products/[id]");
+  revalidatePath("/products/[id]", "page");
   if (error) {
     console.error("Error creating product image:", error);
     return { success: false, error: error.message };
@@ -440,7 +470,7 @@ export async function deleteProductImage(
     return { success: false, data: undefined, error: error.message };
   }
 
-  revalidatePath("/products/[id]");
+  revalidatePath("/products/[id]", "page");
   return { success: true, data: undefined, error: undefined };
 }
 
@@ -457,7 +487,7 @@ export async function bulkUpsertProductImages(
       })
       .select();
 
-    revalidatePath("/products/[id]");
+    revalidatePath("/products/[id]", "page");
     if (error) {
       console.error("Error upserting product images:", error);
       return { success: false, error: error.message };
@@ -499,7 +529,7 @@ export async function bulkUpsertVariantImages(
       .upsert(variantImages, { onConflict: "id", defaultToNull: false })
       .select();
 
-    revalidatePath("/products/[id]");
+    revalidatePath("/products/[id]", "page");
     if (error) {
       console.error("Error upserting variant images:", error);
       return { success: false, error: error.message };
@@ -526,7 +556,7 @@ export async function replaceVariantImages(
       .delete()
       .eq("variant_id", variantId);
 
-    revalidatePath("/products/[id]");
+    revalidatePath("/products/[id]", "page");
     if (deleteError) {
       console.error("Error deleting existing variant images:", deleteError);
       return { success: false, error: deleteError.message };

@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
-import { IProductQuality } from "@/types/product";
+import { TProductQuality } from "@/types/product";
 import {
   Form,
   FormControl,
@@ -55,7 +55,7 @@ import {
   deleteProductVariant,
   bulkUpsertProductVariants,
 } from "@/lib/actions/product";
-import { getQueryClient } from "@/lib/query-client";
+import { getAdminQueryClient } from "@/lib/query-client";
 
 interface IVariantManagementProps {
   isOpen: boolean;
@@ -63,7 +63,7 @@ interface IVariantManagementProps {
   onSave: (saved?: boolean, options?: { showProductInfo?: boolean }) => void;
 }
 
-const qualityOptions: { label: string; value: IProductQuality }[] = [
+const qualityOptions: { label: string; value: TProductQuality }[] = [
   { label: "Standard", value: "Standard" },
   { label: "Premium", value: "Premium" },
   { label: "Luxury", value: "Luxury" },
@@ -71,7 +71,7 @@ const qualityOptions: { label: string; value: IProductQuality }[] = [
 
 const EmptyVariant = {
   id: undefined, // New variant, no ID yet
-  product_quality: "Standard" as IProductQuality,
+  product_quality: "Standard" as TProductQuality,
   price: 0,
   mrp: 0,
   stock: 0,
@@ -212,7 +212,7 @@ export function VariantManagement({
       }));
 
       const result = await bulkUpsertProductVariants(variantsWithProductId);
-      getQueryClient().invalidateQueries({
+      getAdminQueryClient().invalidateQueries({
         queryKey: ["productVariants", productId],
       });
 
@@ -239,7 +239,7 @@ export function VariantManagement({
     }
   };
 
-  const generateSKU = (index: number, quality: IProductQuality) => {
+  const generateSKU = (index: number, quality: TProductQuality) => {
     const qualityPrefix = quality.toUpperCase().substring(0, 3);
     const indexSuffix = String(index + 1).padStart(2, "0");
     return `${qualityPrefix}-${indexSuffix}`;
@@ -281,7 +281,7 @@ export function VariantManagement({
               </Button>
 
               {isFetchingVariants ? (
-                <div className="flex items-center gap-2text-muted-foreground justify-center">
+                <div className="flex items-center gap-2 text-muted-foreground justify-center">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Loading variants...
                 </div>
@@ -318,7 +318,7 @@ export function VariantManagement({
                                             // Auto-generate SKU when quality changes
                                             const sku = generateSKU(
                                               index,
-                                              value as IProductQuality
+                                              value as TProductQuality
                                             );
                                             form.setValue(
                                               `variants.${index}.sku`,

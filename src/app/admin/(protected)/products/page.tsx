@@ -1,18 +1,27 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, StarIcon, CheckIcon, XIcon, EditIcon } from "lucide-react";
-import { IProduct } from "@/types/product";
-import { getProducts } from "@/lib/actions/product";
+import {
+  Plus,
+  StarIcon,
+  CheckIcon,
+  XIcon,
+  EditIcon,
+  TrashIcon,
+} from "lucide-react";
+import { IProductDetail } from "@/types/product";
+import { deleteProduct, getProducts } from "@/lib/actions/product";
 import usePaginatedQuery from "@/hooks/usePaginatedQuery";
 import { getColumnOrdering } from "@/components/common/DataTable/DataTableUtils";
-import { formatDate } from "@/lib/calendar";
+import { formatDate, manipulateDate } from "@/lib/calendar";
 import { ColumnDef, SortingState } from "@tanstack/react-table";
 import DataTable from "@/components/common/DataTable/DataTable";
 import { IPaginationParams } from "@/types/query";
 import { Badge } from "@/components/ui/badge";
 import EditProduct from "@/components/admin/edit-product";
+import { pluralize } from "@/lib/utils";
+import { toast } from "sonner";
 
 const CategoryOptions = [
   { label: "Perfume", value: "perfume" },
@@ -59,28 +68,55 @@ export default function AdminProductsPage() {
   const [filterState, setFilterState] = useState<IFilterState>({});
   const [isEditProductOpen, setIsEditProductOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<
-    IProduct | undefined
+    IProductDetail | undefined
   >();
+  const [deletingProductIds, setDeletingProductIds] = useState<string[]>([]);
 
-  const params: IPaginationParams = useMemo(
-    () => ({
+  const params: IPaginationParams = useMemo(() => {
+    const createdAtLte = filterState?.created_at?.to
+      ? formatDate.iso(manipulateDate.addDays(filterState?.created_at?.to, 1))
+      : undefined;
+    return {
       page,
       page_size: pageSize,
       search: search,
       ordering: getColumnOrdering(sorting),
       category: filterState.category,
-      created_at_gte: formatDate.iso(filterState.created_at?.from),
-      created_at_lte: formatDate.iso(filterState.created_at?.to),
+      created_at_gte: filterState.created_at?.from
+        ? formatDate.iso(filterState.created_at?.from)
+        : undefined,
+      created_at_lte: createdAtLte,
       is_featured: filterState.is_featured ? true : undefined,
-    }),
-    [page, pageSize, search, sorting, filterState]
-  );
+    };
+  }, [page, pageSize, search, sorting, filterState]);
 
   const { data, isLoading, error, refetch } = usePaginatedQuery(
     ["products"],
     getProducts,
     params
   );
+
+  const onClickDeleteProduct = useCallback(
+    async (product: IProductDetail) => {
+      setDeletingProductIds((prev) => [...prev, product.id]);
+      try {
+        const result = await deleteProduct(product.id, product);
+        if (result.success) {
+          toast.success("Product deleted successfully!");
+          refetch();
+        } else {
+          toast.error(result.error || "Failed to delete product!");
+        }
+      } catch (error) {
+        console.error("Error deleting product:", error);
+      } finally {
+        setDeletingProductIds((prev) => prev.filter((id) => id !== product.id));
+      }
+    },
+    [refetch]
+  );
+
+  const rowsData = useMemo(() => data?.data || [], [data?.data]);
 
   useEffect(() => setPage(1), [search, sorting, filterState]);
 
@@ -89,7 +125,7 @@ export default function AdminProductsPage() {
     setIsEditProductOpen(true);
   };
 
-  const handleEditProduct = (product: IProduct) => {
+  const handleEditProduct = (product: IProductDetail) => {
     setSelectedProduct(product);
     setIsEditProductOpen(true);
   };
@@ -100,7 +136,7 @@ export default function AdminProductsPage() {
     if (saved === true) refetch();
   };
 
-  const columns: ColumnDef<IProduct>[] = useMemo(
+  const columns: ColumnDef<(typeof rowsData)[0]>[] = useMemo(
     () => [
       {
         accessorKey: "name",
@@ -109,16 +145,41 @@ export default function AdminProductsPage() {
           width: "300px",
           wrapperClassName: "text-foreground text-left w-full truncate",
         },
-        cell: ({ row }) => row.original.name,
+        cell: ({ row }) => row.original?.name,
         enableSorting: true,
       },
       {
-        accessorKey: "description",
-        header: "Description",
+        accessorKey: "images",
+        header: "Images",
         meta: {
-          wrapperClassName: "text-foreground truncate text-left",
+          width: "130px",
+          minWidth: "130px",
+          maxWidth: "130px",
+          wrapperClassName:
+            "flex justify-center text-muted-foreground font-medium",
         },
-        cell: ({ row }) => row.original.description,
+        cell: ({ row }) =>
+          (row.original?.product_images?.length ?? 0) +
+          " " +
+          pluralize("image", row.original?.product_images?.length ?? 0),
+        enableSorting: false,
+      },
+      {
+        accessorKey: "variants",
+        header: "Variants Info",
+        cell: ({ row }) => (
+          <div className="flex flex-col gap-2">
+            {row.original?.product_variants?.map((variant, idx) => (
+              <div
+                key={idx}
+                className="text-sm text-muted-foreground font-medium"
+              >
+                {variant.product_quality} - ₹{variant.price} - ({variant.volume}
+                ml) - {variant.variant_images?.length} img
+              </div>
+            ))}
+          </div>
+        ),
         enableSorting: false,
       },
       {
@@ -132,7 +193,7 @@ export default function AdminProductsPage() {
         },
         cell: ({ row }) => (
           <Badge variant="secondary" className="capitalize">
-            {row.original.category}
+            {row.original?.category}
           </Badge>
         ),
         enableSorting: false,
@@ -147,7 +208,7 @@ export default function AdminProductsPage() {
           wrapperClassName: "flex justify-center",
         },
         cell: ({ row }) =>
-          row.original.is_featured ? <CheckIcon /> : <XIcon />,
+          row.original?.is_featured ? <CheckIcon /> : <XIcon />,
         enableSorting: false,
       },
       {
@@ -159,7 +220,10 @@ export default function AdminProductsPage() {
           maxWidth: "130px",
           wrapperClassName: "text-foreground text-center",
         },
-        cell: ({ row }) => formatDate.long(row.original.created_at!),
+        cell: ({ row }) =>
+          row.original?.created_at
+            ? formatDate.long(row.original.created_at!)
+            : "-",
         enableSorting: true,
       },
       {
@@ -171,7 +235,10 @@ export default function AdminProductsPage() {
           maxWidth: "130px",
           wrapperClassName: "text-foreground text-center",
         },
-        cell: ({ row }) => formatDate.long(row.original.updated_at!),
+        cell: ({ row }) =>
+          row.original.updated_at
+            ? formatDate.long(row.original.updated_at!)
+            : "-",
         enableSorting: true,
       },
 
@@ -181,13 +248,25 @@ export default function AdminProductsPage() {
         cell: ({ row }) => (
           <div className="flex flex-row gap-2 justify-center">
             <Button
-              variant="outline"
+              variant="info"
               size="xs"
               className="text-xs"
               onClick={() => handleEditProduct(row.original)}
             >
               <EditIcon className="size-3" />
               Edit
+            </Button>
+            <Button
+              variant="error"
+              size="xs"
+              className="text-xs"
+              loading={deletingProductIds.includes(row.original.id)}
+              onClick={() => onClickDeleteProduct(row.original)}
+            >
+              {!deletingProductIds.includes(row.original.id) && (
+                <TrashIcon className="size-3" />
+              )}
+              Delete
             </Button>
           </div>
         ),
@@ -198,7 +277,7 @@ export default function AdminProductsPage() {
         enableSorting: false,
       },
     ],
-    []
+    [deletingProductIds, onClickDeleteProduct]
   );
 
   return (
@@ -224,7 +303,7 @@ export default function AdminProductsPage() {
 
       <DataTable
         columns={columns}
-        data={data?.data || []}
+        data={rowsData}
         pagination={{
           mode: "server",
           page,

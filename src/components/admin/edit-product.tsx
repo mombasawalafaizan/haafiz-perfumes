@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { IProduct } from "@/types/product";
+import { IProductDetail } from "@/types/product";
 import EditProductInfo from "@/components/admin/edit-product-info";
 import { VariantManagement } from "@/components/admin/variant-management";
 
 interface EditProductProps {
   isOpen: boolean;
-  product?: IProduct;
+  product?: IProductDetail;
   onClose: (saved?: boolean) => void;
 }
 

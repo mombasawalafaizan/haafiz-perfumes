@@ -1,9 +1,9 @@
 // Database Schema Types for Haafiz Perfumes
 
 // Custom ENUM Types
-export type IProductCategory = "perfume" | "attar";
-export type IProductQuality = "Standard" | "Premium" | "Luxury";
-export type IImageContext = "product" | "variant" | "both";
+export type TProductCategory = "perfume" | "attar";
+export type TProductQuality = "Standard" | "Premium" | "Luxury";
+export type TImageContext = "product" | "variant" | "both";
 
 // Images Table
 export interface IImage {
@@ -16,7 +16,7 @@ export interface IImage {
   mime_type?: string; // TEXT, default 'image/jpeg'
   width?: number; // INT4, nullable
   height?: number; // INT4, nullable
-  context?: IImageContext; // image_context, default 'both'
+  context?: TImageContext; // image_context, default 'both'
   created_at?: string; // TIMESTAMP, default CURRENT_TIMESTAMP
   updated_at?: string; // TIMESTAMP, default CURRENT_TIMESTAMP
 }
@@ -26,7 +26,7 @@ export interface IProduct {
   id: string; // UUID
   name: string;
   slug: string;
-  category: IProductCategory; // product_category
+  category: TProductCategory; // product_category
   fragrance_family?: string; // TEXT, nullable
   description?: string; // TEXT, nullable
   top_notes?: string; // TEXT, nullable
@@ -42,7 +42,7 @@ export interface IProduct {
 export interface IProductVariant {
   id: string; // UUID
   product_id: string; // UUID (FK to products.id)
-  product_quality: IProductQuality; // product_quality
+  product_quality: TProductQuality; // product_quality
   price: number; // NUMERIC
   mrp: number; // NUMERIC
   stock: number; // INTEGER
@@ -91,21 +91,8 @@ export interface IVariantImageWithImage extends IVariantImage {
 }
 
 // Supabase query result types
-export interface IProductDetail {
-  id: string;
-  name: string;
-  slug: string;
-  category: IProductCategory;
-  fragrance_family?: string;
-  description?: string;
-  top_notes?: string;
-  middle_notes?: string;
-  base_notes?: string;
-  additional_notes?: string;
-  is_featured?: boolean;
-  created_at?: string;
-  updated_at?: string;
-  product_variants?: (IProductVariant & {
+export interface IProductDetail extends IProduct {
+  product_variants: (IProductVariant & {
     variant_images: IProductImageQueryResult[];
   })[];
   product_images: IProductImageQueryResult[];
@@ -114,11 +101,7 @@ export interface IProductDetail {
 export interface IProductImageQueryResult {
   is_primary: boolean;
   display_order: number;
-  images:
-    | {
-        backblaze_url: string;
-      }[]
-    | {
-        backblaze_url: string;
-      };
+  images: {
+    backblaze_url: string;
+  };
 }

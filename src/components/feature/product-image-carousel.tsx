@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,23 +13,51 @@ import {
   CarouselPrevious,
   type CarouselApi,
 } from "@/components/ui/carousel";
+import { useProductVariant } from "@/hooks/useProductVariant";
+import { IProductDetail } from "@/types/product";
+import { imageSortFn } from "@/lib/utils";
 
 interface ProductImageCarouselProps {
-  images: string[];
-  productName: string;
-  discountPercentage: number;
+  product: IProductDetail;
 }
 
-export function ProductImageCarousel({
-  images,
-  productName,
-  discountPercentage,
-}: ProductImageCarouselProps) {
+export function ProductImageCarousel({ product }: ProductImageCarouselProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
   const [showMobileCarousel, setShowMobileCarousel] = useState(false);
   const [mobileMainCarouselApi, setMobileMainCarouselApi] =
     useState<CarouselApi | null>(null);
+
+  const { selectedVariant } = useProductVariant(product.id!);
+
+  const variantImages = useMemo(
+    () => selectedVariant?.variant_images || [],
+    [selectedVariant]
+  );
+
+  const discountPercentage = useMemo(() => {
+    if (!selectedVariant) return 0;
+    return selectedVariant?.mrp > selectedVariant?.price
+      ? Math.round(
+          ((selectedVariant.mrp - selectedVariant.price) /
+            selectedVariant.mrp) *
+            100
+        )
+      : 0;
+  }, [selectedVariant]);
+
+  // Determine which images to display
+  const displayImages = useMemo(() => {
+    if (!!variantImages?.length)
+      return variantImages
+        .sort(imageSortFn)
+        .map((img) => img.images?.backblaze_url);
+    if (!!product.product_images?.length)
+      return product.product_images
+        .sort(imageSortFn)
+        .map((img) => img.images?.backblaze_url);
+    return ["/perfume_placeholder.jpg"];
+  }, [variantImages, product.product_images]);
 
   // Sync mobile main carousel with selected image
   const handleCarouselSelect = () => {
@@ -50,13 +78,15 @@ export function ProductImageCarousel({
     <>
       {/* Main Image */}
       <div
-        className="relative aspect-square overflow-hidden rounded-lg border border-border cursor-zoom-in group"
+        className="relative aspect-square overflow-hidden rounded-lg border border-border cursor-zoom-in group bg-muted/20"
         onClick={() => setIsZoomed(!isZoomed)}
       >
         <Image
-          src={images[selectedImageIndex] || "/placeholder-product.jpg"}
-          alt={productName}
+          src={displayImages[selectedImageIndex] || "/placeholder-product.jpg"}
+          alt={product.name}
           fill
+          quality={95}
+          priority
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className={`object-cover transition-transform duration-300 ${
             isZoomed ? "scale-150" : "group-hover:scale-105"
@@ -85,10 +115,10 @@ export function ProductImageCarousel({
       </div>
 
       {/* Desktop Mini Carousel */}
-      {images.length > 1 && (
+      {displayImages.length > 1 && (
         <div className="hidden md:block">
           <div className="flex justify-center space-x-2">
-            {images.map((image, index) => (
+            {displayImages.map((image, index) => (
               <div
                 key={index}
                 className={`relative w-20 h-20 overflow-hidden rounded-lg border-2 cursor-pointer transition-all ${
@@ -100,9 +130,10 @@ export function ProductImageCarousel({
               >
                 <Image
                   src={image}
-                  alt={`${productName} - Image ${index + 1}`}
+                  alt={`${product.name} - Image ${index + 1}`}
                   fill
-                  sizes="(max-width: 768px) 20vw, (max-width: 1200px) 10vw, 8vw"
+                  quality={90}
+                  sizes="80px"
                   className="object-cover"
                 />
               </div>
@@ -132,13 +163,14 @@ export function ProductImageCarousel({
                 onSelect={handleCarouselSelect}
               >
                 <CarouselContent>
-                  {images.map((image, index) => (
+                  {displayImages.map((image, index) => (
                     <CarouselItem key={index}>
-                      <div className="relative aspect-square overflow-hidden rounded-lg">
+                      <div className="relative aspect-square overflow-hidden rounded-lg bg-muted/20">
                         <Image
                           src={image}
-                          alt={`${productName} - Image ${index + 1}`}
+                          alt={`${product.name} - Image ${index + 1}`}
                           fill
+                          quality={95}
                           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           className="object-cover"
                         />
@@ -152,10 +184,10 @@ export function ProductImageCarousel({
             </div>
 
             {/* Mini Carousel at Bottom */}
-            {images.length > 1 && (
+            {displayImages.length > 1 && (
               <div className="p-4 border-t border-white/20">
                 <div className="flex justify-center space-x-2">
-                  {images.map((image, index) => (
+                  {displayImages.map((image, index) => (
                     <div
                       key={index}
                       className={`relative w-16 h-16 overflow-hidden rounded-lg border-2 cursor-pointer transition-all ${
@@ -167,9 +199,10 @@ export function ProductImageCarousel({
                     >
                       <Image
                         src={image}
-                        alt={`${productName} - Thumbnail ${index + 1}`}
+                        alt={`${product.name} - Thumbnail ${index + 1}`}
                         fill
-                        sizes="(max-width: 768px) 15vw, (max-width: 1200px) 8vw, 6vw"
+                        quality={85}
+                        sizes="64px"
                         className="object-cover"
                       />
                     </div>

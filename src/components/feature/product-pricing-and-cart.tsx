@@ -1,56 +1,27 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, Minus, Plus } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
-import { IProductDetail, IProductVariant } from "@/types/product";
+import { useProductVariant } from "@/hooks/useProductVariant";
+import { IProductDetail } from "@/types/product";
 
 interface ProductPricingAndCartProps {
   product: IProductDetail;
-  hasMultiplePricing: boolean;
 }
 
-export function ProductPricingAndCart({
-  product,
-  hasMultiplePricing,
-}: ProductPricingAndCartProps) {
-  const [selectedVariant, setSelectedVariant] =
-    useState<IProductVariant | null>(null);
-  const [quantity, setQuantity] = useState(1);
+export function ProductPricingAndCart({ product }: ProductPricingAndCartProps) {
   const { addItem } = useCart();
-
-  // Memoize expensive operations
-  const productImageUrl = useMemo(() => {
-    return (
-      (product.product_images?.[0]?.images as { backblaze_url: string })
-        ?.backblaze_url || "/placeholder-product.jpg"
-    );
-  }, [product.product_images]);
-
-  const productPricing = useMemo(() => {
-    return (
-      product.product_variants?.map((v) => ({
-        mrp: v.mrp,
-        price: v.price,
-        volume: v.volume,
-        stock: v.stock,
-        quality: v.product_quality,
-        sku: v.sku,
-      })) || []
-    );
-  }, [product.product_variants]);
+  const [quantity, setQuantity] = useState(1);
+  const { selectedVariant, setSelectedVariant } = useProductVariant(
+    product.id!
+  );
 
   // Set default to first variant on mount
   useEffect(() => {
-    if (
-      product.product_variants &&
-      product.product_variants.length > 0 &&
-      !selectedVariant
-    ) {
-      setSelectedVariant(product.product_variants[0]);
-    }
-  }, [product.product_variants, selectedVariant]);
+    setSelectedVariant(product.product_variants?.[0]);
+  }, [product.product_variants, setSelectedVariant]);
 
   const handleAddToCart = useCallback(() => {
     if (!selectedVariant) {
@@ -63,7 +34,7 @@ export function ProductPricingAndCart({
       id: product.id,
       name: product.name,
       slug: product.slug,
-      imageUrl: productImageUrl,
+      imageUrl: product.product_images?.[0]?.images?.backblaze_url || "",
       priceMRP: selectedVariant.mrp,
       priceActual: selectedVariant.price,
       sizeMl: selectedVariant.volume,
@@ -77,32 +48,33 @@ export function ProductPricingAndCart({
       description: product.description || "",
       category: product.category,
       featured: product.is_featured || false,
-      pricing: productPricing,
+      pricing:
+        product.product_variants?.map((v) => ({
+          mrp: v.mrp,
+          price: v.price,
+          volume: v.volume,
+          stock: v.stock,
+          quality: v.product_quality,
+          sku: v.sku,
+        })) || [],
     };
 
     addItem(productToAdd, quantity);
-  }, [
-    selectedVariant,
-    product,
-    productImageUrl,
-    productPricing,
-    quantity,
-    addItem,
-  ]);
+  }, [selectedVariant, product, quantity, addItem]);
 
   // Calculate totals based on selected variant and quantity
-  const totalPrice = useMemo(
-    () => (selectedVariant ? selectedVariant.price * quantity : 0),
-    [selectedVariant, quantity]
-  );
-  const totalMRP = useMemo(
-    () => (selectedVariant ? selectedVariant.mrp * quantity : 0),
-    [selectedVariant, quantity]
-  );
-  const totalSavings = useMemo(
-    () => totalMRP - totalPrice,
-    [totalMRP, totalPrice]
-  );
+  // const totalPrice = useMemo(
+  //   () => (selectedVariant ? selectedVariant.price * quantity : 0),
+  //   [selectedVariant, quantity]
+  // );
+  // const totalMRP = useMemo(
+  //   () => (selectedVariant ? selectedVariant.mrp * quantity : 0),
+  //   [selectedVariant, quantity]
+  // );
+  // const totalSavings = useMemo(
+  //   () => totalMRP - totalPrice,
+  //   [totalMRP, totalPrice]
+  // );
 
   // Calculate discount percentages for all variants
   const variantDiscountPercentages = useMemo(() => {
@@ -130,11 +102,11 @@ export function ProductPricingAndCart({
     [selectedVariant]
   );
 
-  if (
-    !hasMultiplePricing &&
-    product.product_variants &&
-    product.product_variants.length === 1
-  ) {
+  // Multiple pricing - show variant selection
+  if (!selectedVariant) {
+    return null;
+  }
+  if (product.product_variants && !!product?.product_variants?.length) {
     // Single pricing - show simplified layout
     const variant = product.product_variants[0];
     const discountPercentage =
@@ -155,8 +127,13 @@ export function ProductPricingAndCart({
               </span>
             )}
           </div>
+          <div className="flex gap-3 text-lg text-primary font-bold">
+            {variant.product_quality && <span>{variant.product_quality}</span>}
+            {!!variant.product_quality && !!variant.volume && <span>-</span>}
+            {variant.volume && <span>{variant.volume}ml</span>}
+          </div>
           {discountPercentage > 0 && (
-            <p className="text-lg text-primary font-medium">
+            <p className="text-sm text-primary">
               Save ₹{(variant.mrp - variant.price).toLocaleString()}
             </p>
           )}
@@ -191,37 +168,8 @@ export function ProductPricingAndCart({
             Add to Cart
           </Button>
         </div>
-
-        {/* Quantity-based totals */}
-        {quantity > 1 && (
-          <div className="bg-muted/50 p-4 rounded-lg space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">
-                Total for {quantity} items:
-              </span>
-              <span className="font-semibold">
-                ₹{totalPrice.toLocaleString()}
-              </span>
-            </div>
-            {totalSavings > 0 && (
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">
-                  Total savings:
-                </span>
-                <span className="text-primary font-semibold">
-                  ₹{totalSavings.toLocaleString()}
-                </span>
-              </div>
-            )}
-          </div>
-        )}
       </div>
     );
-  }
-
-  // Multiple pricing - show variant selection
-  if (!selectedVariant) {
-    return null;
   }
 
   const discountPercentage = selectedVariantDiscountPercentage;
@@ -233,9 +181,6 @@ export function ProductPricingAndCart({
         <div className="flex flex-wrap gap-3">
           {product.product_variants?.map((variant) => {
             const isSelected = selectedVariant?.id === variant.id;
-            const variantDiscountPercentage =
-              variantDiscountPercentages.find((v) => v.id === variant.id)
-                ?.discountPercentage || 0;
 
             return (
               <div
@@ -265,9 +210,9 @@ export function ProductPricingAndCart({
                     </span>
                   )}
                 </div>
-                {variantDiscountPercentage > 0 && (
+                {discountPercentage > 0 && (
                   <span className="text-xs text-primary font-medium">
-                    {variantDiscountPercentage}% OFF
+                    {discountPercentage}% OFF
                   </span>
                 )}
               </div>

@@ -2,7 +2,7 @@
 import { AdminNavbar } from "@/components/admin/admin-navbar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "@/components/admin/theme-provider";
-import { setQueryClient } from "@/lib/query-client";
+import { setAdminQueryClient } from "@/lib/query-client";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -15,7 +15,7 @@ const queryClient = new QueryClient({
 });
 
 // Initialize the global QueryClient
-setQueryClient(queryClient);
+setAdminQueryClient(queryClient);
 
 export default function ProtectedAdminLayout({
   children,
