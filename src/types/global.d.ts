@@ -25,7 +25,3 @@ declare interface IProductPricing {
   quality?: "Standard" | "Premium" | "Luxury";
   sku?: string;
 }
-
-declare interface IFilterState {
-  [key: string]: string | number | boolean | null;
-}

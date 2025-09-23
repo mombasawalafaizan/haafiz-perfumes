@@ -14,7 +14,7 @@ import {
   DialogFooter,
   DialogBody,
 } from "@/components/ui/dialog";
-import { Star, StarOff, ImageIcon, Check } from "lucide-react";
+import { Star, StarOff, ImageIcon, Check, Loader2 } from "lucide-react";
 import { IImage, IVariantImage } from "@/types/product";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
@@ -24,7 +24,7 @@ import {
   replaceVariantImages,
 } from "@/lib/actions/product";
 import { cn } from "@/lib/utils";
-import { getQueryClient } from "@/lib/query-client";
+import { getAdminQueryClient } from "@/lib/query-client";
 
 interface VariantImageManagementDialogProps {
   isOpen: boolean;
@@ -168,7 +168,7 @@ export function VariantImageManagementDialog({
       const result = await replaceVariantImages(variantId, variantImages);
 
       if (result.success) {
-        getQueryClient().invalidateQueries({
+        getAdminQueryClient().invalidateQueries({
           queryKey: ["variantImages", variantId],
         });
         toast.success("Variant images updated successfully!");
@@ -207,133 +207,143 @@ export function VariantImageManagementDialog({
         </DialogHeader>
 
         <DialogBody>
-          <div className="space-y-6">
-            {/* Selection Summary */}
-            <div className="flex flex-col items-center justify-between p-4 bg-muted/50 rounded-lg">
-              <div className="flex items-center gap-4 mb-1">
-                <Label className="text-sm font-medium">
-                  Selected Images: {selectedCount}
-                </Label>
-                {selectedCount > 0 && (
-                  <Badge variant="secondary">{primaryCount} Primary</Badge>
-                )}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                Click images to select/deselect, then mark one as primary
-              </div>
+          {isProductImagesLoading || isVariantImagesLoading ? (
+            <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
+              <Loader2 className="h-12 animate-spin w-12 mx-auto text-muted-foreground/50 mb-4" />
+              <p className="text-muted-foreground">Loading images...</p>
             </div>
-
-            {/* Images Grid */}
-            <div className="space-y-4">
-              {selectedImages.length === 0 ? (
-                <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
-                  <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-                  <p className="text-muted-foreground">
-                    No product images available
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Upload product images first to select variant images
-                  </p>
+          ) : (
+            <div className="space-y-6">
+              {/* Selection Summary */}
+              <div className="flex flex-col items-center justify-between p-4 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-4 mb-1">
+                  <Label className="text-sm font-medium">
+                    Selected Images: {selectedCount}
+                  </Label>
+                  {selectedCount > 0 && (
+                    <Badge variant="secondary">{primaryCount} Primary</Badge>
+                  )}
                 </div>
-              ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
-                  {productImages?.data?.map((image) => {
-                    const selectedImage = selectedImages.find(
-                      (img) => img.id === image.images.id
-                    )!;
-                    return (
-                      <div
-                        key={image.id}
-                        className={cn(
-                          "relative group border rounded-lg overflow-hidden bg-muted/30 cursor-pointer transition-all",
-                          {
-                            "border-primary ring-2 ring-primary/20":
-                              !!selectedImage.isSelected,
-                            "border-muted-foreground/25": !selectedImage,
-                          }
-                        )}
-                        onClick={() => handleImageSelection(image.images.id)}
-                      >
-                        <div className="aspect-square relative">
-                          <Image
-                            src={image.images.backblaze_url}
-                            alt={image.images.alt_text || `Product image`}
-                            fill
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                            className="object-cover"
-                          />
+                <div className="text-sm text-muted-foreground">
+                  Click images to select/deselect, then mark one as primary
+                </div>
+              </div>
 
-                          {/* Selection Overlay */}
-                          <div
-                            className={cn(
-                              "absolute inset-0 transition-opacity",
-                              !!selectedImage.isSelected
-                                ? "bg-primary/20"
-                                : "bg-black/50 opacity-0 group-hover:opacity-100"
-                            )}
-                          >
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              {!selectedImage.isSelected && (
-                                <div className="text-white text-sm font-medium">
-                                  Click to select
-                                </div>
+              {/* Images Grid */}
+              <div className="space-y-4">
+                {selectedImages.length === 0 ? (
+                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
+                    <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+                    <p className="text-muted-foreground">
+                      No product images available
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Upload product images first to select variant images
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
+                    {productImages?.data?.map((image) => {
+                      const selectedImage = selectedImages.find(
+                        (img) => img.id === image.images.id
+                      )!;
+                      return (
+                        <div
+                          key={image.id}
+                          className={cn(
+                            "relative group border rounded-lg overflow-hidden bg-muted/30 cursor-pointer transition-all",
+                            {
+                              "border-primary ring-2 ring-primary/20":
+                                !!selectedImage.isSelected,
+                              "border-muted-foreground/25": !selectedImage,
+                            }
+                          )}
+                          onClick={() => handleImageSelection(image.images.id)}
+                        >
+                          <div className="aspect-square relative">
+                            <Image
+                              src={image.images.backblaze_url}
+                              alt={image.images.alt_text || `Product image`}
+                              fill
+                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                              className="object-cover"
+                            />
+
+                            {/* Selection Overlay */}
+                            <div
+                              className={cn(
+                                "absolute inset-0 transition-opacity",
+                                !!selectedImage.isSelected
+                                  ? "bg-primary/20"
+                                  : "bg-black/50 opacity-0 group-hover:opacity-100"
                               )}
-                            </div>
-                          </div>
-
-                          {/* Action Buttons - Only show for selected images */}
-                          {selectedImage.isSelected && (
-                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                              <Button
-                                size="sm"
-                                variant={
-                                  selectedImage.isPrimary
-                                    ? "default"
-                                    : "secondary"
-                                }
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleSetPrimary(image.images.id);
-                                }}
-                              >
-                                {selectedImage.isPrimary ? (
-                                  <Star className="h-4 w-4" />
-                                ) : (
-                                  <StarOff className="h-4 w-4" />
+                            >
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                {!selectedImage.isSelected && (
+                                  <div className="text-white text-sm font-medium">
+                                    Click to select
+                                  </div>
                                 )}
-                              </Button>
+                              </div>
                             </div>
-                          )}
 
-                          {/* Selection Badge */}
-                          {selectedImage.isSelected && (
-                            <div className="absolute top-2 left-2">
-                              <Badge
-                                variant="default"
-                                className="text-xs rounded-full"
-                              >
-                                <Check className="h-4 w-4" />
-                              </Badge>
-                            </div>
-                          )}
+                            {/* Action Buttons - Only show for selected images */}
+                            {selectedImage.isSelected && (
+                              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                <Button
+                                  size="sm"
+                                  variant={
+                                    selectedImage.isPrimary
+                                      ? "default"
+                                      : "secondary"
+                                  }
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleSetPrimary(image.images.id);
+                                  }}
+                                >
+                                  {selectedImage.isPrimary ? (
+                                    <Star className="h-4 w-4" />
+                                  ) : (
+                                    <StarOff className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              </div>
+                            )}
 
-                          {/* Primary Badge */}
-                          {selectedImage.isSelected &&
-                            selectedImage.isPrimary && (
-                              <div className="absolute top-2 right-2">
-                                <Badge variant="secondary" className="text-xs">
-                                  Primary
+                            {/* Selection Badge */}
+                            {selectedImage.isSelected && (
+                              <div className="absolute top-2 left-2">
+                                <Badge
+                                  variant="default"
+                                  className="text-xs rounded-full"
+                                >
+                                  <Check className="h-4 w-4" />
                                 </Badge>
                               </div>
                             )}
+
+                            {/* Primary Badge */}
+                            {selectedImage.isSelected &&
+                              selectedImage.isPrimary && (
+                                <div className="absolute top-2 right-2">
+                                  <Badge
+                                    variant="secondary"
+                                    className="text-xs"
+                                  >
+                                    Primary
+                                  </Badge>
+                                </div>
+                              )}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </DialogBody>
 
         <DialogFooter>

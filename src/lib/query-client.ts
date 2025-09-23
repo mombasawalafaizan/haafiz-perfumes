@@ -1,16 +1,16 @@
 import { QueryClient } from "@tanstack/react-query";
 
-let globalQueryClient: QueryClient | null = null;
+let globalAdminQueryClient: QueryClient | null = null;
 
-export function setQueryClient(client: QueryClient) {
-  globalQueryClient = client;
+export function setAdminQueryClient(client: QueryClient) {
+  globalAdminQueryClient = client;
 }
 
-export function getQueryClient(): QueryClient {
-  if (!globalQueryClient) {
+export function getAdminQueryClient(): QueryClient {
+  if (!globalAdminQueryClient) {
     throw new Error(
       "QueryClient not initialized. Make sure to call setQueryClient first."
     );
   }
-  return globalQueryClient;
+  return globalAdminQueryClient;
 }

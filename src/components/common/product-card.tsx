@@ -36,10 +36,7 @@ export function ProductCard({ product }: ProductCardProps) {
     const primaryProductImage = product.product_images?.find(
       (pi) => pi.is_primary
     );
-    return (
-      (primaryProductImage?.images as { backblaze_url: string })
-        ?.backblaze_url || placeholderImage
-    );
+    return primaryProductImage?.images?.backblaze_url || placeholderImage;
   }, [product.product_images, placeholderImage]);
 
   const lowestPriceVariant = useMemo(() => {

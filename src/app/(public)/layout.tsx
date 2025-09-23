@@ -3,6 +3,7 @@ import { CartProvider } from "@/hooks/useCart";
 import { CartSidebar } from "@/components/feature/cart-sidebar";
 import { Navbar } from "@/components/feature/navbar";
 import { Footer } from "@/components/ui/footer";
+import { QueryProvider } from "@/components/feature/query-provider";
 import "@/styles/globals.css";
 
 export const metadata: Metadata = {
@@ -17,11 +18,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <CartProvider>
-      <Navbar />
-      <main className="h-full bg-background">{children}</main>
-      <Footer />
-      <CartSidebar />
-    </CartProvider>
+    <QueryProvider>
+      <CartProvider>
+        <Navbar />
+        <main className="h-full bg-background">{children}</main>
+        <Footer />
+        <CartSidebar />
+      </CartProvider>
+    </QueryProvider>
   );
 }

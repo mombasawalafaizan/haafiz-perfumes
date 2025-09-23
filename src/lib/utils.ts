@@ -20,6 +20,29 @@ export function createProductSlug(productName: string): string {
     .replace(/^-|-$/g, ""); // Remove leading/trailing hyphens
 }
 
+export function getArrFromString(data: string): string[] {
+  // This function detects the splitter string from the given data string and splits it accordingly
+  if (data && data.trim()) {
+    const arr = data.trim().split(",");
+    return arr?.filter((item) => item?.trim() !== "");
+  } else return [];
+}
+
+export function pluralize(word: string, count: number) {
+  const pluralWord = word.toLowerCase().endsWith("y")
+    ? word.slice(0, -1) + "ies"
+    : word + "s";
+  return !count || count <= 1 ? word : pluralWord;
+}
+
+export function imageSortFn<
+  T extends { is_primary: boolean; display_order: number }
+>(img1: T, img2: T): number {
+  if (img1.is_primary && !img2.is_primary) return -1;
+  if (!img1.is_primary && img2.is_primary) return 1;
+  return img1.display_order - img2.display_order;
+}
+
 // Utility function to get the least price option from pricing array
 export function getLeastPriceOption(
   pricing: IProductPricing[]

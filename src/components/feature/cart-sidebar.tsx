@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { Plus, Minus, ShoppingBag, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/useCart";
@@ -19,6 +20,25 @@ export function CartSidebar() {
   const { items, isOpen, setCartOpen, updateQuantity, removeItem } = useCart();
   const { totalPrice, availableSpace } = calculateCartMeta(items);
   const router = useRouter();
+
+  // Close cart on browser back button
+  useEffect(() => {
+    const handlePopState = () => {
+      if (isOpen) {
+        setCartOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      // Add a history entry when cart opens
+      window.history.pushState({ cartOpen: true }, "");
+      window.addEventListener("popstate", handlePopState);
+    }
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [isOpen, setCartOpen]);
 
   const handleCheckout = () => {
     setCartOpen(false);

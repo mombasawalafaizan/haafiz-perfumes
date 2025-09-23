@@ -3,16 +3,18 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ShoppingCart, Menu, Search, User } from "lucide-react";
+import { ShoppingCart, Menu, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/useCart";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { calculateCartMeta } from "@/lib/utils";
+import { SearchProducts } from "./search-products";
 
 export function Navbar() {
   const { items, setCartOpen } = useCart();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { totalItems } = calculateCartMeta(items);
 
   const navigationItems = [
@@ -95,13 +97,13 @@ export function Navbar() {
           {/* Right Side Icons */}
           <div className="flex items-center space-x-4">
             {/* Search Icon */}
-            <Button variant="ghost" size="icon" className="hover:bg-accent">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hover:bg-accent"
+              onClick={() => setIsSearchOpen(true)}
+            >
               <Search className="h-5 w-5" />
-            </Button>
-
-            {/* User Icon */}
-            <Button variant="ghost" size="icon" className="hover:bg-accent">
-              <User className="h-5 w-5" />
             </Button>
 
             {/* Cart Button */}
@@ -121,6 +123,9 @@ export function Navbar() {
           </div>
         </div>
       </div>
+
+      {/* Search Products Dialog */}
+      <SearchProducts open={isSearchOpen} onOpenChange={setIsSearchOpen} />
     </nav>
   );
 }

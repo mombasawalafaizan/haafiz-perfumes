@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea } from "@/components/ui/input";
+import { TagsInput } from "@/components/ui/tags-input";
 import {
   Form,
   FormControl,
@@ -29,7 +30,7 @@ import {
 } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
 import { ImageIcon, Package, Save } from "lucide-react";
-import { IProduct, IProductImage } from "@/types/product";
+import { IProductImage, IProductDetail } from "@/types/product";
 import {
   createProduct,
   updateProduct,
@@ -39,9 +40,9 @@ import { toast } from "sonner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ProductFormData, productSchema } from "@/lib/validations/product";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { createProductSlug } from "@/lib/utils";
+import { createProductSlug, getArrFromString } from "@/lib/utils";
 import ProductImageManagementDialog from "@/components/admin/product-image-management-dialog";
-import { getQueryClient } from "@/lib/query-client";
+import { getAdminQueryClient } from "@/lib/query-client";
 
 interface EditProductProps {
   isOpen: boolean;
@@ -49,7 +50,7 @@ interface EditProductProps {
     saved?: boolean,
     options?: { showVariants?: boolean; productId?: string }
   ) => void;
-  product?: IProduct;
+  product?: IProductDetail;
 }
 
 const categoryOptions = [
@@ -94,7 +95,7 @@ function EditProductInfo({ isOpen, onClose, product }: EditProductProps) {
       }
 
       if (result.success) {
-        getQueryClient().invalidateQueries({
+        getAdminQueryClient().invalidateQueries({
           queryKey: ["product", result.data.id],
         });
         setSavedProductId(result.data.id);
@@ -120,7 +121,7 @@ function EditProductInfo({ isOpen, onClose, product }: EditProductProps) {
       const result = await bulkUpsertProductImages(images);
       if (result.success) {
         setShowImageManagement(false);
-        getQueryClient().invalidateQueries({
+        getAdminQueryClient().invalidateQueries({
           queryKey: ["productImages", savedProductId],
         });
         if (product?.id)
@@ -267,9 +268,12 @@ function EditProductInfo({ isOpen, onClose, product }: EditProductProps) {
                             <FormItem>
                               <FormLabel>Fragrance Family</FormLabel>
                               <FormControl>
-                                <Input
-                                  placeholder="Oriental, Floral, Woody..."
-                                  {...field}
+                                <TagsInput
+                                  value={getArrFromString(field.value || "")}
+                                  onValueChange={(tags) => {
+                                    field.onChange(tags.join(","));
+                                  }}
+                                  placeholder="Add fragrance families..."
                                 />
                               </FormControl>
                               <FormMessage />
@@ -284,9 +288,12 @@ function EditProductInfo({ isOpen, onClose, product }: EditProductProps) {
                             <FormItem>
                               <FormLabel>Top Notes</FormLabel>
                               <FormControl>
-                                <Input
-                                  placeholder="Bergamot, Lemon, Orange..."
-                                  {...field}
+                                <TagsInput
+                                  value={getArrFromString(field.value || "")}
+                                  onValueChange={(tags) => {
+                                    field.onChange(tags.join(","));
+                                  }}
+                                  placeholder="Add top notes..."
                                 />
                               </FormControl>
                               <FormMessage />
@@ -301,9 +308,12 @@ function EditProductInfo({ isOpen, onClose, product }: EditProductProps) {
                             <FormItem>
                               <FormLabel>Middle Notes</FormLabel>
                               <FormControl>
-                                <Input
-                                  placeholder="Rose, Jasmine, Lavender..."
-                                  {...field}
+                                <TagsInput
+                                  value={getArrFromString(field.value || "")}
+                                  onValueChange={(tags) => {
+                                    field.onChange(tags.join(","));
+                                  }}
+                                  placeholder="Add middle notes..."
                                 />
                               </FormControl>
                               <FormMessage />
@@ -317,9 +327,12 @@ function EditProductInfo({ isOpen, onClose, product }: EditProductProps) {
                             <FormItem>
                               <FormLabel>Base Notes</FormLabel>
                               <FormControl>
-                                <Input
-                                  placeholder="Sandalwood, Musk, Vanilla..."
-                                  {...field}
+                                <TagsInput
+                                  value={getArrFromString(field.value || "")}
+                                  onValueChange={(tags) => {
+                                    field.onChange(tags.join(","));
+                                  }}
+                                  placeholder="Add base notes..."
                                 />
                               </FormControl>
                               <FormMessage />
