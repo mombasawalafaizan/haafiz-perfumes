@@ -223,6 +223,12 @@ export async function getProducts(params: IPaginationParams) {
         created_at,
         updated_at,
         is_featured,
+        fragrance_family,
+        description,
+        top_notes,
+        middle_notes,
+        base_notes,
+        additional_notes,
         product_variants (
           product_quality,
           price,

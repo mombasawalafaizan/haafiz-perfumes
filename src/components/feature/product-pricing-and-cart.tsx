@@ -6,6 +6,7 @@ import { ShoppingCart, Minus, Plus } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useProductVariant } from "@/hooks/useProductVariant";
 import { IProductDetail } from "@/types/product";
+import { getLeastPriceOption } from "@/lib/utils";
 
 interface ProductPricingAndCartProps {
   product: IProductDetail;
@@ -18,10 +19,14 @@ export function ProductPricingAndCart({ product }: ProductPricingAndCartProps) {
     product.id!
   );
 
+  const sortedVariants = useMemo(() => {
+    return product?.product_variants?.sort((a, b) => a.price - b.price) || [];
+  }, [product?.product_variants]);
+
   // Set default to first variant on mount
   useEffect(() => {
-    setSelectedVariant(product.product_variants?.[0]);
-  }, [product.product_variants, setSelectedVariant]);
+    setSelectedVariant(getLeastPriceOption(sortedVariants));
+  }, [sortedVariants, setSelectedVariant]);
 
   const handleAddToCart = useCallback(() => {
     if (!selectedVariant) {
@@ -106,7 +111,7 @@ export function ProductPricingAndCart({ product }: ProductPricingAndCartProps) {
   if (!selectedVariant) {
     return null;
   }
-  if (product.product_variants && !!product?.product_variants?.length) {
+  if (product.product_variants && product?.product_variants?.length === 1) {
     // Single pricing - show simplified layout
     const variant = product.product_variants[0];
     const discountPercentage =
@@ -179,7 +184,7 @@ export function ProductPricingAndCart({ product }: ProductPricingAndCartProps) {
       {/* Variant Selection */}
       <div className="space-y-3">
         <div className="flex flex-wrap gap-3">
-          {product.product_variants?.map((variant) => {
+          {sortedVariants?.map((variant) => {
             const isSelected = selectedVariant?.id === variant.id;
 
             return (

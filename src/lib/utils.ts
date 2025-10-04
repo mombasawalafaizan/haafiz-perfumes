@@ -44,10 +44,12 @@ export function imageSortFn<
 }
 
 // Utility function to get the least price option from pricing array
-export function getLeastPriceOption(
-  pricing: IProductPricing[]
-): IProductPricing {
-  return pricing.reduce((min, current) => {
+export function getLeastPriceOption<
+  T extends {
+    price?: number;
+  }
+>(arr: T[]): T {
+  return arr.reduce((min, current) => {
     const currentPrice = current.price || 0;
     const minPrice = min.price || 0;
     return currentPrice < minPrice ? current : min;
