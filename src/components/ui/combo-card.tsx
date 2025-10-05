@@ -1,11 +1,37 @@
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+
+interface ComboOffer {
+  id: string;
+  name: string;
+  slug: string;
+  imageUrl: string;
+  priceMRP: number;
+  priceActual: number;
+  sizeMl: number;
+  fragrance_family: string[];
+  top_notes: string;
+  middle_notes: string;
+  base_notes: string;
+  additional_notes: string;
+  description: string;
+  category: string;
+  featured: boolean;
+  pricing?: Array<{
+    mrp: number;
+    price: number;
+    volume: number;
+    stock: number;
+    quality: string;
+    sku: string;
+  }>;
+}
 
 interface ComboCardProps {
-  offer: IProduct;
-  onAddToCart?: (offer: IProduct) => void;
+  offer: ComboOffer;
+  onAddToCart?: (offer: ComboOffer) => void;
 }
 
 export function ComboCard({ offer, onAddToCart }: ComboCardProps) {

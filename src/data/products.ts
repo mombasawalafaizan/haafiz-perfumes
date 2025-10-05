@@ -1,6 +1,9 @@
 import { createProductSlug } from "@/lib/utils";
 
-export const products: IProduct[] = [
+// Note: The main products array is not currently used in the application
+// If needed in the future, it should be updated to use IProductDetail structure
+/*
+export const products: IProductDetail[] = [
   // Perfumes
   {
     id: "perfume-1",
@@ -524,6 +527,7 @@ export const products: IProduct[] = [
     ],
   },
 ];
+*/
 
 export const comboOffers = [
   {
@@ -623,8 +627,9 @@ export const heroSlides = [
   // },
 ];
 
-export const getFeaturedProducts = () => products.filter((p) => p.featured);
-export const getProductsByCategory = (category: "perfume" | "attar") =>
-  products.filter((p) => p.category === category);
-export const getProductById = (id: string) => products.find((p) => p.id === id);
-export const getAllProducts = () => products;
+// Note: These functions are commented out since the main products array is not used
+// export const getFeaturedProducts = () => products.filter((p) => p.featured);
+// export const getProductsByCategory = (category: "perfume" | "attar") =>
+//   products.filter((p) => p.category === category);
+// export const getProductById = (id: string) => products.find((p) => p.id === id);
+// export const getAllProducts = () => products;

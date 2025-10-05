@@ -67,37 +67,8 @@ export function ProductCard({ product }: ProductCardProps) {
   const handleAddToCart = useCallback(() => {
     if (!lowestPriceVariant || !displayData) return;
 
-    const { displayPrice, displayMRP, displaySize } = displayData;
-    // Convert IProductDetail to IProduct format for cart
-    const productToAdd: IProduct = {
-      id: product.id,
-      name: product.name,
-      slug: product.slug,
-      imageUrl: productImageUrl,
-      priceMRP: displayMRP,
-      priceActual: displayPrice,
-      sizeMl: displaySize,
-      fragrance_family: product.fragrance_family
-        ? [product.fragrance_family]
-        : [],
-      top_notes: product.top_notes || "",
-      base_notes: product.base_notes || "",
-      middle_notes: product.middle_notes || "",
-      additional_notes: product.additional_notes || "",
-      description: product.description || "",
-      pricing:
-        product.product_variants?.map((variant) => ({
-          mrp: variant.mrp,
-          price: variant.price,
-          volume: variant.volume || 50,
-          stock: variant.stock,
-          quality: variant.product_quality as "Standard" | "Premium" | "Luxury",
-          sku: variant.sku,
-        })) || [],
-      category: product.category as "perfume" | "attar",
-    };
-
-    addItem(productToAdd, 1);
+    // Pass the original product (IProductDetail) and selected variant ID to addItem
+    addItem(product, lowestPriceVariant.id, 1);
 
     // if (result.success) {
     //   if (result.discarded > 0) {

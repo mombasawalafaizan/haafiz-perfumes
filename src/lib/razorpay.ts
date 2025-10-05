@@ -1,135 +1,131 @@
-// // Razorpay integration utilities
-// declare global {
-//   interface Window {
-//     Razorpay: unknown;
-//   }
-// }
+// Razorpay integration utilities
+import { verifyPaymentSignature } from "@/lib/actions/razorpay";
+import { Orders } from "razorpay/dist/types/orders";
 
-// export interface RazorpayOrder {
-//   id: string;
-//   amount: number;
-//   currency: string;
-//   receipt: string;
-//   status: string;
-//   created_at: number;
-// }
+// Based on official Razorpay documentation and community standards
+// These types are derived from the official Razorpay checkout documentation
 
-// export interface RazorpayPayment {
-//   id: string;
-//   order_id: string;
-//   amount: number;
-//   currency: string;
-//   status: string;
-//   method: string;
-//   created_at: number;
-// }
+interface RazorpayPaymentResponse {
+  razorpay_payment_id: string;
+  razorpay_order_id: string;
+  razorpay_signature: string;
+}
 
-// // Load Razorpay script
-// export const loadRazorpayScript = (): Promise<void> => {
-//   return new Promise((resolve, reject) => {
-//     if (
-//       typeof window !== "undefined" &&
-//       (window as unknown as { Razorpay: unknown }).Razorpay
-//     ) {
-//       resolve();
-//       return;
-//     }
+interface RazorpayCheckoutOptions {
+  key: string;
+  amount: number;
+  currency: string;
+  name: string;
+  description: string;
+  order_id: string;
+  prefill?: {
+    name?: string;
+    email?: string;
+    contact?: string;
+  };
+  notes?: Record<string, string>;
+  theme?: {
+    color?: string;
+  };
+  handler: (response: RazorpayPaymentResponse) => void;
+  modal?: {
+    ondismiss?: () => void;
+  };
+  readonly?: {
+    name?: boolean;
+    email?: boolean;
+    contact?: boolean;
+  };
+  image?: string;
+  callback_url?: string;
+  method?: {
+    netbanking?: boolean;
+    wallet?: boolean;
+    emi?: boolean;
+    upi?: boolean;
+    card?: boolean;
+  };
+}
 
-//     const script = document.createElement("script");
-//     script.src = "https://checkout.razorpay.com/v1/checkout.js";
-//     script.onload = () => resolve();
-//     script.onerror = () => reject(new Error("Failed to load Razorpay script"));
-//     document.head.appendChild(script);
-//   });
-// };
+declare global {
+  interface Window {
+    Razorpay: {
+      new (options: RazorpayCheckoutOptions): {
+        open(): void;
+        close(): void;
+      };
+    };
+  }
+}
 
-// // Create Razorpay order
-// export const createRazorpayOrder = async (
-//   amount: number,
-//   receipt: string
-// ): Promise<RazorpayOrder> => {
-//   const response = await fetch("/api/razorpay/create-order", {
-//     method: "POST",
-//     headers: {
-//       "Content-Type": "application/json",
-//     },
-//     body: JSON.stringify({
-//       amount: amount * 100, // Convert to paise
-//       receipt,
-//     }),
-//   });
+// Load Razorpay script
+export const loadRazorpayScript = (): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    if (typeof window !== "undefined" && window.Razorpay) {
+      resolve();
+      return;
+    }
 
-//   if (!response.ok) {
-//     throw new Error("Failed to create Razorpay order");
-//   }
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("Failed to load Razorpay script"));
+    document.head.appendChild(script);
+  });
+};
 
-//   return response.json();
-// };
+// Initialize Razorpay checkout
+export const initializeRazorpayCheckout = async (
+  order: Orders.RazorpayOrder,
+  customerInfo: {
+    name: string;
+    email: string;
+    phone: string;
+  },
+  onSuccess: (paymentId: string) => void,
+  onFailure: (error: any) => void
+) => {
+  await loadRazorpayScript();
 
-// // Initialize Razorpay checkout
-// // export const initializeRazorpayCheckout = async (
-// //   order: RazorpayOrder,
-// //   customerInfo: {
-// //     name: string;
-// //     email: string;
-// //     phone: string;
-// //   },
-// //   onSuccess: (paymentId: string) => void,
-// //   onFailure: (error: unknown) => void
-// // ) => {
-// //   await loadRazorpayScript();
+  const options: RazorpayCheckoutOptions = {
+    key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
+    amount: Number(order.amount),
+    currency: order.currency,
+    name: "Haafiz Perfumes",
+    description: "Premium Fragrances & Attars",
+    order_id: order.id,
+    prefill: {
+      name: customerInfo.name,
+      email: customerInfo.email,
+      contact: customerInfo.phone,
+    },
+    theme: {
+      color: "#f59e0b",
+    },
+    handler: async function (response: RazorpayPaymentResponse) {
+      try {
+        const result = await verifyPaymentSignature(
+          response.razorpay_order_id,
+          response.razorpay_payment_id,
+          response.razorpay_signature
+        );
 
-// //   const options = {
-// //     key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
-// //     amount: order.amount,
-// //     currency: order.currency,
-// //     name: "Haafiz Perfumes",
-// //     description: "Premium Fragrances & Attars",
-// //     order_id: order.id,
-// //     prefill: {
-// //       name: customerInfo.name,
-// //       email: customerInfo.email,
-// //       contact: customerInfo.phone,
-// //     },
-// //     theme: {
-// //       color: "#f59e0b",
-// //     },
-// //     handler: function (response: unknown) {
-// //       onSuccess(response as unknown as string);
-// //     },
-// //     modal: {
-// //       ondismiss: function () {
-// //         onFailure(new Error("Payment cancelled by user"));
-// //       },
-// //     },
-// //   };
+        if (result.success) {
+          onSuccess(response.razorpay_payment_id);
+        } else {
+          onFailure(new Error("Payment verification failed"));
+        }
+      } catch (error) {
+        onFailure(error);
+      }
+    },
+    modal: {
+      ondismiss: function () {
+        onFailure(new Error("Payment cancelled by user"));
+      },
+    },
+  };
 
-// //   const razorpay = new (window as { Razorpay: unknown }).Razorpay(options);
-// //   razorpay.open();
-// // };
-
-// // Verify payment signature
-// export const verifyPaymentSignature = async (
-//   orderId: string,
-//   paymentId: string,
-//   signature: string
-// ): Promise<boolean> => {
-//   const response = await fetch("/api/razorpay/verify-payment", {
-//     method: "POST",
-//     headers: {
-//       "Content-Type": "application/json",
-//     },
-//     body: JSON.stringify({
-//       orderId,
-//       paymentId,
-//       signature,
-//     }),
-//   });
-
-//   if (!response.ok) {
-//     return false;
-//   }
-
-//   const result = await response.json();
-//   return result.verified;
-// };
+  const razorpay = new window.Razorpay(options);
+  razorpay.open();
+};

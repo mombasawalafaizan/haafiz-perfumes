@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Plus, Minus, ShoppingBag, Trash2 } from "lucide-react";
+import { Plus, Minus, ShoppingBag, Trash2, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/useCart";
 import {
@@ -45,8 +45,12 @@ export function CartSidebar() {
     router.push("/checkout");
   };
 
-  const handleUpdateQuantity = (id: string, newQuantity: number) => {
-    updateQuantity(id, newQuantity);
+  const handleUpdateQuantity = (
+    productId: string,
+    variantId: string,
+    newQuantity: number
+  ) => {
+    updateQuantity(productId, variantId, newQuantity);
 
     // if (!result.success) {
     //   toast({
@@ -64,7 +68,7 @@ export function CartSidebar() {
   };
 
   const totalSavings = items.reduce((sum, item) => {
-    return sum + (item.priceMRP - item.priceActual) * item.quantity;
+    return sum + (item.unit_mrp - item.unit_price) * item.quantity;
   }, 0);
 
   return (
@@ -98,37 +102,48 @@ export function CartSidebar() {
               <div className="py-4 px-2 space-y-4">
                 {items.map((item) => (
                   <div
-                    key={item.id}
+                    key={`${item.product_id}-${item.variant_id}`}
                     className="bg-background rounded-lg p-2 shadow-sm border border-primary/20"
                   >
                     <div className="flex items-start space-x-3">
                       {/* Product Image */}
                       <div className="relative w-20 h-20 flex-shrink-0">
-                        <Image
-                          src={item.imageUrl}
-                          alt={item.name}
-                          fill
-                          sizes="(min-resolution: 2dppx) 160px, 80px"
-                          className="object-cover rounded-md"
-                        />
+                        {item.product_snapshot?.image_url ? (
+                          <Image
+                            src={item.product_snapshot.image_url}
+                            alt={item.product_name}
+                            fill
+                            sizes="(min-resolution: 2dppx) 160px, 80px"
+                            className="object-cover rounded-md"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-muted flex items-center justify-center rounded-md">
+                            <Package className="h-6 w-6 text-muted-foreground" />
+                          </div>
+                        )}
                       </div>
 
                       {/* Product Details */}
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <h3 className="font-bold text-foreground text-sm leading-tight">
-                              {item.name}
+                          <div className="flex-1 max-w-[95%]">
+                            <h3
+                              className="font-bold text-foreground text-sm leading-tight truncate"
+                              title={item.product_name}
+                            >
+                              {item.product_name}
                             </h3>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {item.name} - {item.sizeMl} ML
+                            <p className="text-xs text-muted-foreground mt-2">
+                              {item.product_quality} - {item.product_volume} ML
                             </p>
                           </div>
                           <Button
                             variant="ghost"
                             size="icon"
                             className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                            onClick={() => removeItem(item.id)}
+                            onClick={() =>
+                              removeItem(item.product_id, item.variant_id)
+                            }
                           >
                             <Trash2 className="w-3 h-3" />
                           </Button>
@@ -136,25 +151,29 @@ export function CartSidebar() {
 
                         <div className="flex justify-between">
                           {/* Price */}
-                          <div className="flex items-center space-x-2 mt-2">
+                          <div className="flex items-center space-x-2 pt-1">
                             <span className="text-sm font-bold text-primary">
-                              ₹{item.priceActual.toLocaleString()}
+                              ₹{item.unit_price.toLocaleString()}
                             </span>
-                            {item.priceMRP > item.priceActual && (
+                            {item.unit_mrp > item.unit_price && (
                               <span className="text-sm text-muted-foreground line-through">
-                                ₹{item.priceMRP.toLocaleString()}
+                                ₹{item.unit_mrp.toLocaleString()}
                               </span>
                             )}
                           </div>
 
                           {/* Quantity Controls */}
-                          <div className="flex items-center space-x-2 mt-3">
+                          <div className="flex items-center space-x-2">
                             <Button
                               variant="outline"
                               size="icon"
                               className="h-8 w-8"
                               onClick={() =>
-                                handleUpdateQuantity(item.id, item.quantity - 1)
+                                handleUpdateQuantity(
+                                  item.product_id,
+                                  item.variant_id,
+                                  item.quantity - 1
+                                )
                               }
                             >
                               <Minus className="w-3 h-3" />
@@ -167,7 +186,11 @@ export function CartSidebar() {
                               size="icon"
                               className="h-8 w-8"
                               onClick={() =>
-                                handleUpdateQuantity(item.id, item.quantity + 1)
+                                handleUpdateQuantity(
+                                  item.product_id,
+                                  item.variant_id,
+                                  item.quantity + 1
+                                )
                               }
                               disabled={availableSpace === 0}
                             >

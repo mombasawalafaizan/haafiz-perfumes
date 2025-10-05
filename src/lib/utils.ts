@@ -1,4 +1,5 @@
 import { CartItem, MAX_CART_ITEMS } from "@/hooks/useCart";
+import { IProductDetail, IProductVariant } from "@/types/product";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -58,29 +59,23 @@ export function getLeastPriceOption<
 
 export function calculateCartMeta(items: CartItem[]) {
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-  const totalPrice = items.reduce(
-    (sum, item) => sum + item.priceActual * item.quantity,
-    0
-  );
+  const totalPrice = items.reduce((sum, item) => sum + item.total_price, 0);
   const availableSpace = MAX_CART_ITEMS - totalItems;
   return { totalItems, totalPrice, availableSpace };
 }
 
 // Utility function to create a product with selected pricing
 export function createProductWithPricing(
-  product: IProduct,
-  selectedPricing: IProductPricing
-): IProduct {
+  product: IProductDetail,
+  selectedPricing: IProductVariant
+): IProductDetail {
   return {
     ...product,
-    priceMRP: selectedPricing.mrp || product.priceMRP,
-    priceActual: selectedPricing.price || product.priceActual,
-    sizeMl: selectedPricing.volume || product.sizeMl,
-    mrp: selectedPricing.mrp,
-    price: selectedPricing.price,
-    volume: selectedPricing.volume,
-    stock: selectedPricing.stock,
-    quality: selectedPricing.quality,
-    sku: selectedPricing.sku,
+    product_variants: [
+      {
+        ...selectedPricing,
+        variant_images: [],
+      },
+    ],
   };
 }
