@@ -5,8 +5,13 @@ import { useCart } from "@/hooks/useCart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Package } from "lucide-react";
+import { ShoppingCart, Package, Truck } from "lucide-react";
 import Link from "next/link";
+import {
+  calculateShipping,
+  calculateTotalWithShipping,
+  getShippingTierDescription,
+} from "@/lib/utils";
 
 export function CheckoutSummary() {
   const { items: cartItems } = useCart();
@@ -15,8 +20,19 @@ export function CheckoutSummary() {
     return cartItems.reduce((sum, item) => sum + item.total_price, 0);
   };
 
+  const calculateShippingInfo = () => {
+    const subtotal = calculateSubtotal();
+    const totalQuantity = cartItems.reduce(
+      (sum, item) => sum + item.quantity,
+      0
+    );
+    return calculateShipping(subtotal, totalQuantity);
+  };
+
   const calculateTotal = () => {
-    return calculateSubtotal(); // No tax, shipping, or discounts for now
+    const subtotal = calculateSubtotal();
+    const shippingInfo = calculateShippingInfo();
+    return calculateTotalWithShipping(subtotal, shippingInfo.shipping_amount);
   };
 
   if (cartItems.length === 0) {
@@ -60,7 +76,7 @@ export function CheckoutSummary() {
                 key={`${item.product_id}-${item.variant_id}`}
                 className="flex items-center gap-3"
               >
-                <div className="w-12 h-12 bg-muted rounded-md flex-shrink-0 overflow-hidden">
+                <div className="w-16 h-20 bg-muted rounded-md flex-shrink-0 overflow-hidden">
                   {item.product_snapshot?.image_url ? (
                     <Image
                       src={item.product_snapshot.image_url}
@@ -75,15 +91,15 @@ export function CheckoutSummary() {
                     </div>
                   )}
                 </div>
-                <div className="flex flex-col gap-0.5 min-w-0 max-w-sm">
+                <div className="flex flex-col gap-1 min-w-0 max-w-sm flex-1 justify-between">
                   <h4 className="font-medium text-sm line-clamp-2 truncate">
                     {item.product_name}
                   </h4>
                   <p className="text-xs text-muted-foreground">
                     {item.product_volume}ml • {item.product_quality}
                   </p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">
+                  <div className="flex items-center ">
+                    <span className="text-sm font-medium mr-2">
                       ₹{item.unit_price.toFixed(2)}
                     </span>
                     <span className="text-xs text-muted-foreground">
@@ -103,10 +119,52 @@ export function CheckoutSummary() {
               <span>Subtotal</span>
               <span>₹{calculateSubtotal().toFixed(2)}</span>
             </div>
-            <div className="flex justify-between text-sm text-muted-foreground">
-              <span>Shipping</span>
-              <span>Free</span>
-            </div>
+            {(() => {
+              const shippingInfo = calculateShippingInfo();
+              const totalQuantity = cartItems.reduce(
+                (sum, item) => sum + item.quantity,
+                0
+              );
+
+              return (
+                <div className="flex justify-between text-sm">
+                  <div className="flex items-center gap-1">
+                    <Truck className="h-3 w-3" />
+                    <span>Shipping</span>
+                    {!shippingInfo.is_free_shipping && (
+                      <span className="text-xs text-muted-foreground">
+                        ({getShippingTierDescription(totalQuantity)})
+                      </span>
+                    )}
+                  </div>
+                  <span
+                    className={
+                      shippingInfo.is_free_shipping
+                        ? "text-success font-medium"
+                        : ""
+                    }
+                  >
+                    {shippingInfo.is_free_shipping
+                      ? "Free"
+                      : `₹${shippingInfo.shipping_amount}`}
+                  </span>
+                </div>
+              );
+            })()}
+            {(() => {
+              const shippingInfo = calculateShippingInfo();
+              if (!shippingInfo.is_free_shipping) {
+                const remainingForFree =
+                  shippingInfo.free_shipping_threshold -
+                  shippingInfo.total_before_shipping;
+                return (
+                  <div className="text-xs text-muted-foreground text-center">
+                    Add ₹{remainingForFree.toFixed(0)} more for free shipping
+                  </div>
+                );
+              }
+              return null;
+            })()}
             {/* <div className="flex justify-between text-sm text-muted-foreground">
               <span>Tax</span>
               <span>₹0.00</span>

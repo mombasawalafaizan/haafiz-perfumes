@@ -1,27 +1,31 @@
 "use server";
 
-import { supabase } from "@/lib/supabase";
+import { supabase, querySupabase } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
 import {
   IOrder,
   IOrderDetail,
-  IOrderSummary,
   IOrderStats,
   ICartToOrderData,
   TOrderStatus,
   TPaymentStatus,
 } from "@/types/order";
 import { CartItem } from "@/hooks/useCart";
-import { IQueryResult } from "@/types/query";
+import {
+  IQueryResult,
+  IPaginationParams,
+  ISupabaseQueryConfig,
+} from "@/types/query";
+import { calculateShipping, calculateTotalWithShipping } from "@/lib/utils";
 
 // Generate unique order number
 function generateOrderNumber(): string {
   const year = new Date().getFullYear();
   const month = String(new Date().getMonth() + 1).padStart(2, "0");
   const day = String(new Date().getDate()).padStart(2, "0");
-  const random = Math.floor(Math.random() * 1000)
+  const random = Math.floor(Math.random() * 100000)
     .toString()
-    .padStart(3, "0");
+    .padStart(5, "0");
   return `HAF-${year}${month}${day}-${random}`;
 }
 
@@ -33,11 +37,23 @@ export async function createOrder(
   try {
     // Calculate totals
     const subtotal = cartItems.reduce((sum, item) => sum + item.total_price, 0);
+    const totalQuantity = cartItems.reduce(
+      (sum, item) => sum + item.quantity,
+      0
+    );
+
+    // Calculate shipping
+    const shippingCalculation = calculateShipping(subtotal, totalQuantity);
+    const shipping_amount = shippingCalculation.shipping_amount;
+
     const tax_amount = 0; // No tax for now
-    const shipping_amount = 0; // Free shipping for now
     const discount_amount = 0; // No discount for now
-    const total_amount =
-      subtotal + tax_amount + shipping_amount - discount_amount;
+    const total_amount = calculateTotalWithShipping(
+      subtotal,
+      shipping_amount,
+      tax_amount,
+      discount_amount
+    );
 
     // Create order record
     const orderNumber = generateOrderNumber();
@@ -143,75 +159,51 @@ export async function getOrderById(
 }
 
 // Get orders for admin dashboard
-export async function getOrders(
-  page: number = 1,
-  limit: number = 10,
-  status?: TOrderStatus,
-  paymentStatus?: TPaymentStatus
-): Promise<IQueryResult<IOrderSummary[]>> {
-  try {
-    const offset = (page - 1) * limit;
-
-    let query = supabase.from("orders").select(
-      `
+export async function getOrders(params: IPaginationParams) {
+  const config: ISupabaseQueryConfig = {
+    select: `
         id,
         order_number,
         customer_name,
+        customer_email,
+        customer_phone,
+        customer_address,
+        customer_city,
+        customer_state,
+        customer_pincode,
+        subtotal,
+        tax_amount,
+        shipping_amount,
+        discount_amount,
         total_amount,
         status,
         payment_status,
         payment_method,
         created_at,
-        order_items!inner(count)
+        updated_at,
+        notes,
+        admin_notes,
+        order_items (*)
       `,
-      { count: "exact" }
-    );
+    searchFields: ["order_number", "customer_name"],
+    sortingFields: ["order_number", "created_at", "total_amount"],
+    filterFields: [
+      {
+        field: "payment_status",
+        type: "enum",
+        allowedValues: ["pending", "paid", "failed", "refunded"],
+      },
+      {
+        field: "payment_method",
+        type: "enum",
+        allowedValues: ["cod", "online"],
+      },
+      { field: "created_at", type: "date", operator: "gte" },
+      { field: "created_at", type: "date", operator: "lte" },
+    ],
+  };
 
-    // Apply filters
-    if (status) {
-      query = query.eq("status", status);
-    }
-    if (paymentStatus) {
-      query = query.eq("payment_status", paymentStatus);
-    }
-
-    // Apply pagination
-    query = query
-      .order("created_at", { ascending: false })
-      .range(offset, offset + limit - 1);
-
-    const { data: orders, error } = await query;
-
-    if (error) {
-      throw new Error(`Failed to fetch orders: ${error.message}`);
-    }
-
-    const formattedOrders: IOrderSummary[] =
-      orders?.map((order) => ({
-        id: order.id,
-        order_number: order.order_number,
-        customer_name: order.customer_name,
-        total_amount: order.total_amount,
-        status: order.status,
-        payment_status: order.payment_status,
-        payment_method: order.payment_method,
-        created_at: order.created_at,
-        item_count: order.order_items?.[0]?.count || 0,
-      })) || [];
-
-    return {
-      success: true,
-      data: formattedOrders,
-      error: undefined,
-    };
-  } catch (error) {
-    console.error("Error fetching orders:", error);
-    return {
-      success: false,
-      data: undefined,
-      error: error instanceof Error ? error.message : "Unknown error occurred",
-    };
-  }
+  return querySupabase<IOrderDetail>("orders", params, config);
 }
 
 // Update order status

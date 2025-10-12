@@ -57,16 +57,18 @@ export function OrderSuccessModal({
             <div className="bg-muted/50 rounded-lg p-4">
               <h3 className="font-semibold mb-2">Order Details</h3>
               <div className="space-y-1 text-sm">
-                <div className="flex gap-2">
+                <div className="flex justify-between">
                   <span className="min-w-fit">Order ID:</span>
-                  <span className="font-mono font-bold leading-normal">
+                  <span className="font-mono font-bold text-xs leading-normal">
                     {orderId}
                   </span>
                 </div>
                 {paymentId && (
                   <div className="flex justify-between">
                     <span>Payment ID:</span>
-                    <span className="font-mono">{paymentId}</span>
+                    <span className="font-mono font-bold text-xs leading-normal">
+                      {paymentId}
+                    </span>
                   </div>
                 )}
               </div>
@@ -79,13 +81,16 @@ export function OrderSuccessModal({
               <h4 className="font-semibold text-info">What&apos;s Next?</h4>
             </div>
             <ul className="text-sm text-info mt-2 space-y-1 ml-0">
-              <li>• You&apos;ll receive an order confirmation email shortly</li>
+              <li>
+                • You&apos;ll receive an order confirmation message shortly via
+                WhatsApp
+              </li>
               <li>• We&apos;ll process your order within 1-2 business days</li>
               <li>
                 • You&apos;ll get tracking information once your order ships
               </li>
               <li>
-                • For any queries, contact us at support@haafizperfumes.com
+                • For any queries, contact us at haafizperfumescare@gmail.com
               </li>
             </ul>
           </div>

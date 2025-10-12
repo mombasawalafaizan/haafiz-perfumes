@@ -603,19 +603,26 @@ export const comboOffers = [
 export const heroSlides = [
   {
     id: 1,
+    image: "/diwali_offer.jpeg",
+    imageClass: "object-contain",
+  },
+  {
+    id: 2,
     image: "/hero-perfumes.jpg",
     title: "Premium Perfumes",
     subtitle: "Luxury fragrances for every occasion",
     cta: "Shop Perfumes",
     link: "/collections/perfumes",
+    imageClass: "object-cover",
   },
   {
-    id: 2,
+    id: 3,
     image: "/hero-attars.jpg",
     title: "Authentic Attars",
     subtitle: "Traditional oil-based fragrances",
     cta: "Explore Attars",
     link: "/collections/attars",
+    imageClass: "object-cover",
   },
   // {
   //   id: 3,

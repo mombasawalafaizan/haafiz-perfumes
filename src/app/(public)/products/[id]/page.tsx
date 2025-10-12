@@ -77,114 +77,111 @@ export default async function ProductDetailPage({
   }
 
   return (
-    <div>
-      {/* Product Detail */}
-      <section className="container mx-auto px-4 pb-16 pt-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Product Image */}
-          <div className="space-y-4">
-            <ProductImageCarousel product={product} />
-          </div>
-
-          {/* Product Info */}
-          <div className="space-y-6">
-            <div className="flex flex-col gap-2">
-              <h1 className="text-3xl font-bold text-foreground mb-2">
-                {product.name}
-              </h1>
-              {renderBadgeList(product.fragrance_family || "", true)}
-              {product.description && (
-                <p className="text-muted-foreground">{product.description}</p>
-              )}
-            </div>
-
-            {/* Pricing Selection and Add to Cart */}
-            <ProductPricingAndCart product={product} />
-
-            {/* Features Banner */}
-            <div className="bg-gradient-card p-6 rounded-lg">
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div className="flex flex-col items-center space-y-2">
-                  <div className="w-12 h-12 bg-foreground rounded-full flex items-center justify-center relative">
-                    <RotateCcw className="w-6 h-6 text-primary" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-12 h-0.5 bg-primary rotate-135 transform origin-center"></div>
-                    </div>
-                  </div>
-                  <span className="text-sm font-medium text-foreground">
-                    Non Returnable
-                  </span>
-                </div>
-                <div className="flex flex-col items-center space-y-2">
-                  <div className="w-12 h-12 bg-foreground rounded-full flex items-center justify-center">
-                    <CreditCard className="w-6 h-6 text-primary" />
-                  </div>
-                  <span className="text-sm font-medium text-foreground">
-                    COD Available
-                  </span>
-                </div>
-                <div className="flex flex-col items-center space-y-2">
-                  <div className="w-12 h-12 bg-foreground rounded-full flex items-center justify-center">
-                    <Truck className="w-6 h-6 text-primary" />
-                  </div>
-                  <span className="text-sm font-medium text-foreground">
-                    Fast Delivery
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Fragrance Notes Details */}
-            {(product.top_notes ||
-              product.middle_notes ||
-              product.base_notes) && (
-              <div className="space-y-3">
-                <h3 className="text-lg font-semibold text-foreground">
-                  Fragrance Notes
-                </h3>
-                <div className="space-y-2">
-                  {product.top_notes && (
-                    <div className="flex flex-col gap-1">
-                      <span className="font-medium text-sm text-muted-foreground">
-                        Top Notes:
-                      </span>
-                      {renderBadgeList(product.top_notes || "")}
-                    </div>
-                  )}
-                  {product.middle_notes && (
-                    <div className="flex flex-col gap-1">
-                      <span className="font-medium text-sm text-muted-foreground">
-                        Middle Notes:
-                      </span>
-                      {renderBadgeList(product.middle_notes || "")}
-                    </div>
-                  )}
-                  {product.base_notes && (
-                    <div className="flex flex-col gap-1">
-                      <span className="font-medium text-sm text-muted-foreground">
-                        Base Notes:
-                      </span>
-                      {renderBadgeList(product.base_notes || "")}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Additional Notes */}
-            {product.additional_notes && (
-              <div className="space-y-2">
-                <h3 className="text-lg font-semibold text-foreground">
-                  Additional Notes
-                </h3>
-                <p className="text-muted-foreground">
-                  {product.additional_notes}
-                </p>
-              </div>
-            )}
-          </div>
+    <section className="container mx-auto px-4 pb-16 pt-4">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-12">
+        {/* Product Image */}
+        <div className="space-y-4">
+          <ProductImageCarousel product={product} />
         </div>
-      </section>
-    </div>
+
+        {/* Product Info */}
+        <div className="space-y-6">
+          <div className="flex flex-col gap-2">
+            <h1 className="text-3xl font-bold text-foreground mb-2">
+              {product.name}
+            </h1>
+            {renderBadgeList(product.fragrance_family || "", true)}
+            {product.description && (
+              <p className="text-muted-foreground">{product.description}</p>
+            )}
+          </div>
+
+          {/* Pricing Selection and Add to Cart */}
+          <ProductPricingAndCart product={product} />
+
+          {/* Features Banner */}
+          <div className="bg-gradient-card p-6 rounded-lg">
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div className="flex flex-col items-center space-y-2">
+                <div className="w-12 h-12 bg-foreground rounded-full flex items-center justify-center relative">
+                  <RotateCcw className="w-6 h-6 text-primary" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-12 h-0.5 bg-primary rotate-135 transform origin-center"></div>
+                  </div>
+                </div>
+                <span className="text-sm font-medium text-foreground">
+                  Non Returnable
+                </span>
+              </div>
+              <div className="flex flex-col items-center space-y-2">
+                <div className="w-12 h-12 bg-foreground rounded-full flex items-center justify-center">
+                  <CreditCard className="w-6 h-6 text-primary" />
+                </div>
+                <span className="text-sm font-medium text-foreground">
+                  COD Available
+                </span>
+              </div>
+              <div className="flex flex-col items-center space-y-2">
+                <div className="w-12 h-12 bg-foreground rounded-full flex items-center justify-center">
+                  <Truck className="w-6 h-6 text-primary" />
+                </div>
+                <span className="text-sm font-medium text-foreground">
+                  Fast Delivery
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Fragrance Notes Details */}
+          {(product.top_notes ||
+            product.middle_notes ||
+            product.base_notes) && (
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-foreground">
+                Fragrance Notes
+              </h3>
+              <div className="space-y-2">
+                {product.top_notes && (
+                  <div className="flex flex-col gap-1">
+                    <span className="font-medium text-sm text-muted-foreground">
+                      Top Notes:
+                    </span>
+                    {renderBadgeList(product.top_notes || "")}
+                  </div>
+                )}
+                {product.middle_notes && (
+                  <div className="flex flex-col gap-1">
+                    <span className="font-medium text-sm text-muted-foreground">
+                      Middle Notes:
+                    </span>
+                    {renderBadgeList(product.middle_notes || "")}
+                  </div>
+                )}
+                {product.base_notes && (
+                  <div className="flex flex-col gap-1">
+                    <span className="font-medium text-sm text-muted-foreground">
+                      Base Notes:
+                    </span>
+                    {renderBadgeList(product.base_notes || "")}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Additional Notes */}
+          {product.additional_notes && (
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold text-foreground">
+                Additional Notes
+              </h3>
+              <p className="text-muted-foreground">
+                {product.additional_notes}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
   );
 }

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Plus, Minus, ShoppingBag, Trash2, Package } from "lucide-react";
+import { Plus, Minus, ShoppingBag, Trash2, Package, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/useCart";
 import {
@@ -15,11 +15,16 @@ import {
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { calculateCartMeta } from "@/lib/utils";
+import {
+  calculateShipping,
+  getShippingTierDescription,
+  calculateTotalWithShipping as calculateTotalWithShippingUtil,
+} from "@/lib/utils";
 
 export function CartSidebar() {
+  const router = useRouter();
   const { items, isOpen, setCartOpen, updateQuantity, removeItem } = useCart();
   const { totalPrice, availableSpace } = calculateCartMeta(items);
-  const router = useRouter();
 
   // Close cart on browser back button
   useEffect(() => {
@@ -51,25 +56,24 @@ export function CartSidebar() {
     newQuantity: number
   ) => {
     updateQuantity(productId, variantId, newQuantity);
-
-    // if (!result.success) {
-    //   toast({
-    //     title: "Error updating quantity",
-    //     description: "Unable to update item quantity.",
-    //     variant: "destructive",
-    //   });
-    // } else if (result.actualQuantity !== newQuantity) {
-    //   toast({
-    //     title: "Cart limit reached! ⚠️",
-    //     description: `Quantity limited to ${result.actualQuantity} (max ${maxItems} items allowed).`,
-    //     variant: "destructive",
-    //   });
-    // }
   };
 
-  const totalSavings = items.reduce((sum, item) => {
-    return sum + (item.unit_mrp - item.unit_price) * item.quantity;
-  }, 0);
+  // const totalSavings = items.reduce((sum, item) => {
+  //   return sum + (item.unit_mrp - item.unit_price) * item.quantity;
+  // }, 0);
+
+  const calculateShippingInfo = () => {
+    const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
+    return calculateShipping(totalPrice, totalQuantity);
+  };
+
+  const calculateTotals = (options: { withShipping?: boolean }) => {
+    const shippingInfo = options.withShipping ? calculateShippingInfo() : null;
+    return calculateTotalWithShippingUtil(
+      totalPrice,
+      shippingInfo?.shipping_amount ?? 0
+    );
+  };
 
   return (
     <Sheet open={isOpen} onOpenChange={setCartOpen}>
@@ -107,7 +111,7 @@ export function CartSidebar() {
                   >
                     <div className="flex items-start space-x-3">
                       {/* Product Image */}
-                      <div className="relative w-20 h-20 flex-shrink-0">
+                      <div className="relative w-16 h-20 flex-shrink-0">
                         {item.product_snapshot?.image_url ? (
                           <Image
                             src={item.product_snapshot.image_url}
@@ -222,6 +226,63 @@ export function CartSidebar() {
                 </div>
               )} */}
 
+                {/* Shipping Preview */}
+                {(() => {
+                  const shippingInfo = calculateShippingInfo();
+                  const totalQuantity = items.reduce(
+                    (sum, item) => sum + item.quantity,
+                    0
+                  );
+
+                  return (
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center text-sm">
+                        <div className="flex items-center gap-1">
+                          <Package className="h-3 w-3" />
+                          <span>Subtotal</span>
+                        </div>
+                        <span>
+                          {`₹${calculateTotals({
+                            withShipping: false,
+                          }).toLocaleString()}`}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm">
+                        <div className="flex items-center gap-1">
+                          <Truck className="h-3 w-3" />
+                          <span>Shipping</span>
+                          {!shippingInfo.is_free_shipping && (
+                            <span className="text-xs text-muted-foreground">
+                              ({getShippingTierDescription(totalQuantity)})
+                            </span>
+                          )}
+                        </div>
+                        <span
+                          className={
+                            shippingInfo.is_free_shipping
+                              ? "text-success font-medium"
+                              : ""
+                          }
+                        >
+                          {shippingInfo.is_free_shipping
+                            ? "Free"
+                            : `₹${shippingInfo.shipping_amount}`}
+                        </span>
+                      </div>
+                      {!shippingInfo.is_free_shipping && (
+                        <div className="text-xs text-muted-foreground font-medium text-center">
+                          Add items worth ₹
+                          {(
+                            shippingInfo.free_shipping_threshold -
+                            shippingInfo.total_before_shipping
+                          ).toFixed(0)}{" "}
+                          more to avail free shipping
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+
                 {/* Total Payable */}
                 <div className="space-y-0">
                   <div className="flex justify-between items-center">
@@ -229,15 +290,12 @@ export function CartSidebar() {
                       Total Payable
                     </span>
                     <span className="text-xl font-bold text-primary">
-                      ₹{totalPrice.toLocaleString()}
+                      ₹
+                      {calculateTotals({ withShipping: true }).toLocaleString()}
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground">
                     MRP Inclusive Of All Taxes
-                  </p>
-                  <p className="text-sm text-center mt-4 text-muted-foreground font-medium">
-                    Wohoo! You save{" "}
-                    <strong>₹{totalSavings.toLocaleString()} </strong> 🎉
                   </p>
                 </div>
 

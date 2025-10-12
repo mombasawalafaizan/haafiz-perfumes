@@ -28,6 +28,7 @@ import {
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -152,6 +153,7 @@ export function CheckoutForm({ className }: CheckoutFormProps) {
 
           await initializeRazorpayCheckout(
             razorpayOrderResult.data,
+            orderResult.data!.id,
             {
               name: `${data.first_name} ${data.last_name}`,
               email: data.email,
@@ -161,7 +163,10 @@ export function CheckoutForm({ className }: CheckoutFormProps) {
               // Payment successful
               toast.success("Payment successful!");
               clearCart();
-              setOrderData({ orderId: orderResult.data!.id, paymentId });
+              setOrderData({
+                orderId: orderResult.data!.order_number,
+                paymentId,
+              });
               setShowSuccessModal(true);
               setIsLoading(false);
             },
@@ -179,7 +184,7 @@ export function CheckoutForm({ className }: CheckoutFormProps) {
         // COD order
         toast.success("Order placed successfully!");
         clearCart();
-        setOrderData({ orderId: orderResult.data!.id });
+        setOrderData({ orderId: orderResult.data!.order_number });
         setShowSuccessModal(true);
         setIsLoading(false);
       }
@@ -266,7 +271,7 @@ export function CheckoutForm({ className }: CheckoutFormProps) {
                   name="phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Phone*</FormLabel>
+                      <FormLabel>Phone (WhatsApp)*</FormLabel>
                       <div className="flex space-x-2 items-center">
                         <span className="font-bold text-muted-foreground">
                           +91
@@ -280,6 +285,9 @@ export function CheckoutForm({ className }: CheckoutFormProps) {
                         </FormControl>
                       </div>
                       <FormMessage />
+                      <FormDescription>
+                        Order info will be sent on this number
+                      </FormDescription>
                     </FormItem>
                   )}
                 />

@@ -78,7 +78,7 @@ export function ProductImageCarousel({ product }: ProductImageCarouselProps) {
     <>
       {/* Main Image */}
       <div
-        className="relative aspect-square overflow-hidden rounded-lg border border-border cursor-zoom-in group bg-muted/20"
+        className="relative aspect-[3/4] overflow-hidden rounded-lg border border-border cursor-zoom-in group bg-muted/20"
         onClick={() => setIsZoomed(!isZoomed)}
       >
         <Image

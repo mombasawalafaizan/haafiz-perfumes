@@ -64,6 +64,65 @@ export function calculateCartMeta(items: CartItem[]) {
   return { totalItems, totalPrice, availableSpace };
 }
 
+// Shipping calculation utilities
+
+export interface ShippingCalculation {
+  shipping_amount: number;
+  is_free_shipping: boolean;
+  free_shipping_threshold: number;
+  total_before_shipping: number;
+}
+
+export function calculateShipping(
+  totalAmount: number,
+  totalQuantity: number
+): ShippingCalculation {
+  const freeShippingThreshold = 2000;
+  const isFreeShipping = totalAmount >= freeShippingThreshold;
+
+  let shippingAmount = 0;
+
+  if (!isFreeShipping) {
+    if (totalQuantity <= 2) {
+      shippingAmount = 60;
+    } else if (totalQuantity === 3) {
+      shippingAmount = 80;
+    } else if (totalQuantity <= 5) {
+      shippingAmount = 120;
+    } else {
+      shippingAmount = 150;
+    }
+  }
+
+  return {
+    shipping_amount: shippingAmount,
+    is_free_shipping: isFreeShipping,
+    free_shipping_threshold: freeShippingThreshold,
+    total_before_shipping: totalAmount,
+  };
+}
+
+export function calculateTotalWithShipping(
+  subtotal: number,
+  shippingAmount: number,
+  taxAmount: number = 0,
+  discountAmount: number = 0
+): number {
+  return subtotal + shippingAmount + taxAmount - discountAmount;
+}
+
+export function getShippingTierDescription(quantity: number): string {
+  if (quantity <= 2) {
+    return "Standard (1-2 items)";
+  } else if (quantity === 3) {
+    return "Medium (3 items)";
+  } else if (quantity <= 5) {
+    return "Large (4-5 items)";
+  } else {
+    return "Extra Large (6+ items)";
+  }
+}
+
 // Utility function to create a product with selected pricing
 export function createProductWithPricing(
   product: IProductDetail,

@@ -41,27 +41,28 @@ export async function createRazorpayOrder(
 
 // Verify payment signature
 export async function verifyPaymentSignature(
-  orderId: string,
+  razorpayOrderId: string,
   paymentId: string,
-  signature: string
+  signature: string,
+  databaseOrderId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const hmac = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!);
-    hmac.update(`${orderId}|${paymentId}`);
+    hmac.update(`${razorpayOrderId}|${paymentId}`);
     const generatedSignature = hmac.digest("hex");
 
     if (generatedSignature === signature) {
-      // Update order status in database
+      // Update order status in database using database order ID
       const { error } = await supabase
         .from("orders")
         .update({
           payment_status: "paid",
           status: "confirmed",
           razorpay_payment_id: paymentId,
+          razorpay_order_id: razorpayOrderId,
           updated_at: new Date().toISOString(),
         })
-        .eq("razorpay_order_id", orderId);
-
+        .eq("id", databaseOrderId);
       if (error) {
         throw new Error(`Failed to update order: ${error.message}`);
       }

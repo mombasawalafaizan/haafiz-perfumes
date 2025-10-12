@@ -104,7 +104,7 @@ export interface IOrderSummary {
   payment_status: TPaymentStatus;
   payment_method: TPaymentMethod;
   created_at: string;
-  item_count: number;
+  order_items: IOrderItem[];
 }
 
 // Order Statistics

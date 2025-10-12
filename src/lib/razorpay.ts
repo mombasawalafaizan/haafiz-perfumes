@@ -77,6 +77,7 @@ export const loadRazorpayScript = (): Promise<void> => {
 // Initialize Razorpay checkout
 export const initializeRazorpayCheckout = async (
   order: Orders.RazorpayOrder,
+  databaseOrderId: string,
   customerInfo: {
     name: string;
     email: string;
@@ -107,7 +108,8 @@ export const initializeRazorpayCheckout = async (
         const result = await verifyPaymentSignature(
           response.razorpay_order_id,
           response.razorpay_payment_id,
-          response.razorpay_signature
+          response.razorpay_signature,
+          databaseOrderId
         );
 
         if (result.success) {
