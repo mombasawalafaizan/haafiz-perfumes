@@ -1,16 +1,16 @@
 import Link from "next/link";
 import {
-  Instagram,
-  Facebook,
-  Twitter,
-  Mail,
-  Phone,
-  MapPin,
+  InstagramIcon,
+  FacebookIcon,
+  // MailIcon,
+  // PhoneIcon,
+  MapPinIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { ExternalLink } from "@/components/ui/external-link";
 import { MobileFooterAccordion } from "@/components/feature/mobile-footer-accordion";
+import { WhatsAppIcon } from "@/components/ui/whatsapp-icon";
 
 export function Footer() {
   return (
@@ -33,19 +33,27 @@ export function Footer() {
               ingredients from around the world.
             </p>
             <div className="flex space-x-4">
-              <ExternalLink href="https://www.instagram.com/haafiz_perfumes/">
+              <ExternalLink href="https://www.instagram.com/haafiz_perfumes.in/">
                 <Button variant="ghost" size="icon" className="hover:bg-accent">
-                  <Instagram className="h-5 w-5" />
+                  <InstagramIcon className="h-5 w-5" />
                 </Button>
               </ExternalLink>
               <ExternalLink href="https://www.facebook.com/haafiz.perfumes/">
                 <Button variant="ghost" size="icon" className="hover:bg-accent">
-                  <Facebook className="h-5 w-5" />
+                  <FacebookIcon className="h-5 w-5" />
                 </Button>
               </ExternalLink>
-              <Button variant="ghost" size="icon" className="hover:bg-accent">
-                <Twitter className="h-5 w-5" />
-              </Button>
+              <ExternalLink href="https://wa.me/919601800822">
+                <Button variant="ghost" size="icon" className="hover:bg-accent">
+                  {/* <Image
+                    src="/whatsapp-icon.svg"
+                    alt="WhatsApp"
+                    width={16}
+                    height={16}
+                  /> */}
+                  <WhatsAppIcon className="h-5 w-5" />
+                </Button>
+              </ExternalLink>
             </div>
           </div>
 
@@ -127,16 +135,16 @@ export function Footer() {
               Contact Info
             </h4>
             <div className="space-y-3">
-              <div className="flex items-center space-x-3 text-muted-foreground">
-                <Mail className="h-5 w-5 text-primary" />
+              {/* <div className="flex items-center space-x-3 text-muted-foreground">
+                <MailIcon className="h-5 w-5 text-primary" />
                 <span>hello@haafizperfumes.com</span>
-              </div>
+              </div> */}
               <div className="flex items-center space-x-3 text-muted-foreground">
-                <Phone className="h-5 w-5 text-primary" />
-                <span>+91 98765 43210 (WhatsApp)</span>
+                <WhatsAppIcon className="h-5 w-5 text-primary" />
+                <span>+91 96018 00822 (WhatsApp)</span>
               </div>
               <div className="flex items-start space-x-3 text-muted-foreground">
-                <MapPin className="h-5 w-5 text-primary mt-1" />
+                <MapPinIcon className="h-5 w-5 text-primary mt-1" />
                 <span>
                   Muglisara
                   <br />
@@ -164,19 +172,21 @@ export function Footer() {
               ingredients from around the world.
             </p>
             <div className="flex justify-center space-x-4">
-              <ExternalLink href="https://www.instagram.com/haafiz_perfumes/">
+              <ExternalLink href="https://www.instagram.com/haafiz_perfumes.in/">
                 <Button variant="ghost" size="icon" className="hover:bg-accent">
-                  <Instagram className="h-5 w-5" />
+                  <InstagramIcon className="h-5 w-5" />
                 </Button>
               </ExternalLink>
               <ExternalLink href="https://www.facebook.com/haafiz.perfumes/">
                 <Button variant="ghost" size="icon" className="hover:bg-accent">
-                  <Facebook className="h-5 w-5" />
+                  <FacebookIcon className="h-5 w-5" />
                 </Button>
               </ExternalLink>
-              <Button variant="ghost" size="icon" className="hover:bg-accent">
-                <Twitter className="h-5 w-5" />
-              </Button>
+              <ExternalLink href="https://wa.me/919601800822">
+                <Button variant="ghost" size="icon" className="hover:bg-accent">
+                  <WhatsAppIcon className="h-5 w-5" />
+                </Button>
+              </ExternalLink>
             </div>
           </div>
 

@@ -1,13 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { Mail, Phone, MapPin } from "lucide-react";
+import {
+  // MailIcon,
+  // PhoneIcon,
+  MapPinIcon,
+} from "lucide-react";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { WhatsAppIcon } from "@/components/ui/whatsapp-icon";
 
 export function MobileFooterAccordion() {
   return (
@@ -92,16 +97,16 @@ export function MobileFooterAccordion() {
         </AccordionTrigger>
         <AccordionContent>
           <div className="space-y-3">
-            <div className="flex items-center space-x-3 text-muted-foreground">
-              <Mail className="h-5 w-5 text-primary" />
+            {/* <div className="flex items-center space-x-3 text-muted-foreground">
+              <MailIcon className="h-5 w-5 text-primary" />
               <span>hello@haafizperfumes.com</span>
-            </div>
+            </div> */}
             <div className="flex items-center space-x-3 text-muted-foreground">
-              <Phone className="h-5 w-5 text-primary" />
-              <span>+91 98765 43210 (WhatsApp)</span>
+              <WhatsAppIcon className="h-5 w-5 text-primary" />
+              <span>+91 96018 00822 (WhatsApp)</span>
             </div>
             <div className="flex items-start space-x-3 text-muted-foreground">
-              <MapPin className="h-5 w-5 text-primary mt-1" />
+              <MapPinIcon className="h-5 w-5 text-primary mt-1" />
               <span>
                 Muglisara
                 <br />
