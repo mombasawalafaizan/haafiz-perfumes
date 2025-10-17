@@ -173,6 +173,30 @@ export function OrderManage({ isOpen, onClose, order }: OrderManageProps) {
                     </Label>
                     <p className="capitalize">{order.payment_method}</p>
                   </div>
+                  {order.razorpay_order_id && (
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">
+                        Razorpay Order ID
+                      </Label>
+                      <p>{order.razorpay_order_id}</p>
+                    </div>
+                  )}
+                  {order.razorpay_payment_id && (
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">
+                        Razorpay Payment ID
+                      </Label>
+                      <p>{order.razorpay_payment_id}</p>
+                    </div>
+                  )}
+                  {order.notes && (
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">
+                        Customer Notes
+                      </Label>
+                      <p className="capitalize">{order.notes}</p>
+                    </div>
+                  )}
                   <div>
                     <Label className="text-sm font-medium text-muted-foreground">
                       Total Amount

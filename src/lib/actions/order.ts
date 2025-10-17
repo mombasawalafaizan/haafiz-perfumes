@@ -179,6 +179,8 @@ export async function getOrders(params: IPaginationParams) {
         status,
         payment_status,
         payment_method,
+        razorpay_order_id,
+        razorpay_payment_id,
         created_at,
         updated_at,
         notes,
