@@ -34,38 +34,9 @@ export function ProductPricingAndCart({ product }: ProductPricingAndCartProps) {
       return;
     }
 
-    // Transform the product data to match the cart's expected format
-    const productToAdd = {
-      id: product.id,
-      name: product.name,
-      slug: product.slug,
-      imageUrl: product.product_images?.[0]?.images?.backblaze_url || "",
-      priceMRP: selectedVariant.mrp,
-      priceActual: selectedVariant.price,
-      sizeMl: selectedVariant.volume,
-      fragrance_family: product.fragrance_family
-        ? [product.fragrance_family]
-        : [],
-      top_notes: product.top_notes || "",
-      middle_notes: product.middle_notes || "",
-      base_notes: product.base_notes || "",
-      additional_notes: product.additional_notes || "",
-      description: product.description || "",
-      category: product.category,
-      featured: product.is_featured || false,
-      pricing:
-        product.product_variants?.map((v) => ({
-          mrp: v.mrp,
-          price: v.price,
-          volume: v.volume,
-          stock: v.stock,
-          quality: v.product_quality,
-          sku: v.sku,
-        })) || [],
-    };
-
-    addItem(productToAdd, quantity);
-  }, [selectedVariant, product, quantity, addItem]);
+    // Pass the original product (IProductDetail) and selected variant ID to addItem
+    addItem(product, selectedVariant.id, quantity);
+  }, [product, selectedVariant, quantity, addItem]);
 
   // Calculate totals based on selected variant and quantity
   // const totalPrice = useMemo(

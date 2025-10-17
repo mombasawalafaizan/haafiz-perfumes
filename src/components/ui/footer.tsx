@@ -5,6 +5,7 @@ import {
   // MailIcon,
   // PhoneIcon,
   MapPinIcon,
+  MailIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
@@ -134,15 +135,19 @@ export function Footer() {
             <h4 className="text-lg font-semibold text-foreground">
               Contact Info
             </h4>
-            <div className="space-y-3">
-              {/* <div className="flex items-center space-x-3 text-muted-foreground">
-                <MailIcon className="h-5 w-5 text-primary" />
-                <span>hello@haafizperfumes.com</span>
-              </div> */}
-              <div className="flex items-center space-x-3 text-muted-foreground">
-                <WhatsAppIcon className="h-5 w-5 text-primary" />
-                <span>+91 96018 00822 (WhatsApp)</span>
-              </div>
+            <div className="flex flex-col gap-2">
+              <ExternalLink href="mailto:haafizperfumescare@gmail.com">
+                <div className="flex items-center space-x-3 text-muted-foreground">
+                  <MailIcon className="h-5 w-5 text-primary" />
+                  <span>haafizperfumescare@gmail.com</span>
+                </div>
+              </ExternalLink>
+              <ExternalLink href="https://wa.me/919601800822">
+                <div className="flex items-center space-x-3 text-muted-foreground">
+                  <WhatsAppIcon className="h-5 w-5 text-primary" />
+                  <span>+91 96018 00822 (WhatsApp)</span>
+                </div>
+              </ExternalLink>
               <div className="flex items-start space-x-3 text-muted-foreground">
                 <MapPinIcon className="h-5 w-5 text-primary mt-1" />
                 <span>

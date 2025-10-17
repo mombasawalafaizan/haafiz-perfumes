@@ -1,6 +1,9 @@
 import { createProductSlug } from "@/lib/utils";
 
-export const products: IProduct[] = [
+// Note: The main products array is not currently used in the application
+// If needed in the future, it should be updated to use IProductDetail structure
+/*
+export const products: IProductDetail[] = [
   // Perfumes
   {
     id: "perfume-1",
@@ -524,6 +527,7 @@ export const products: IProduct[] = [
     ],
   },
 ];
+*/
 
 export const comboOffers = [
   {
@@ -599,19 +603,26 @@ export const comboOffers = [
 export const heroSlides = [
   {
     id: 1,
+    image: "/diwali_offer.jpeg",
+    imageClass: "object-contain",
+  },
+  {
+    id: 2,
     image: "/hero-perfumes.jpg",
     title: "Premium Perfumes",
     subtitle: "Luxury fragrances for every occasion",
     cta: "Shop Perfumes",
     link: "/collections/perfumes",
+    imageClass: "object-cover",
   },
   {
-    id: 2,
+    id: 3,
     image: "/hero-attars.jpg",
     title: "Authentic Attars",
     subtitle: "Traditional oil-based fragrances",
     cta: "Explore Attars",
     link: "/collections/attars",
+    imageClass: "object-cover",
   },
   // {
   //   id: 3,
@@ -623,8 +634,9 @@ export const heroSlides = [
   // },
 ];
 
-export const getFeaturedProducts = () => products.filter((p) => p.featured);
-export const getProductsByCategory = (category: "perfume" | "attar") =>
-  products.filter((p) => p.category === category);
-export const getProductById = (id: string) => products.find((p) => p.id === id);
-export const getAllProducts = () => products;
+// Note: These functions are commented out since the main products array is not used
+// export const getFeaturedProducts = () => products.filter((p) => p.featured);
+// export const getProductsByCategory = (category: "perfume" | "attar") =>
+//   products.filter((p) => p.category === category);
+// export const getProductById = (id: string) => products.find((p) => p.id === id);
+// export const getAllProducts = () => products;

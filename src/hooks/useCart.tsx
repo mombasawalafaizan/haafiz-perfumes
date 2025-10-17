@@ -5,10 +5,11 @@ import { toast } from "sonner";
 import { persist } from "zustand/middleware";
 import { ReactNode, createContext, useContext } from "react";
 import { calculateCartMeta } from "@/lib/utils";
+import { IProductDetail } from "@/types/product";
+import { IOrderItem } from "@/types/order";
 
-export interface CartItem extends IProduct {
-  quantity: number;
-}
+// Cart item based on IOrderItem structure (without id, order_id, created_at)
+export type CartItem = Omit<IOrderItem, "id" | "order_id" | "created_at">;
 
 interface CartState {
   items: CartItem[];
@@ -17,12 +18,14 @@ interface CartState {
 
 interface CartActions {
   addItem: (
-    product: IProduct,
+    product: IProductDetail,
+    selectedVariantId: string,
     quantity?: number
   ) => { success: boolean; added: number; discarded: number };
-  removeItem: (id: string) => void;
+  removeItem: (productId: string, variantId: string) => void;
   updateQuantity: (
-    id: string,
+    productId: string,
+    variantId: string,
     quantity: number
   ) => { success: boolean; actualQuantity: number };
   clearCart: () => void;
@@ -37,9 +40,20 @@ const useCartStore = create<CartState & CartActions>()(
       items: [],
       isOpen: false,
 
-      addItem: (product: IProduct, quantity: number = 1) => {
+      addItem: (
+        product: IProductDetail,
+        selectedVariantId: string,
+        quantity: number = 1
+      ) => {
         const state = get();
-        const existingItem = state.items.find((item) => item.id === product.id);
+        const selectedVariant = product.product_variants?.find(
+          (v) => v.id === selectedVariantId
+        );
+        const existingItem = state.items.find(
+          (item) =>
+            item.product_id === product.id &&
+            item.variant_id === selectedVariantId
+        );
 
         let added = 0;
         let discarded = 0;
@@ -56,8 +70,14 @@ const useCartStore = create<CartState & CartActions>()(
 
           if (added > 0) {
             const updatedItems = state.items.map((item) =>
-              item.id === product.id
-                ? { ...item, quantity: existingItem.quantity + added }
+              item.product_id === product.id &&
+              item.variant_id === selectedVariantId
+                ? {
+                    ...item,
+                    quantity: existingItem.quantity + added,
+                    total_price:
+                      item.unit_price * (existingItem.quantity + added),
+                  }
                 : item
             );
 
@@ -67,12 +87,45 @@ const useCartStore = create<CartState & CartActions>()(
             });
           }
         } else {
-          // New item
+          // New item - convert IProductDetail to CartItem
           added = Math.min(quantity, availableSpace);
           discarded = quantity - added;
 
           if (added > 0) {
-            const newItem = { ...product, quantity: added };
+            if (!selectedVariant) {
+              throw new Error(`Variant with id ${selectedVariantId} not found`);
+            }
+
+            const firstImage =
+              product.product_images?.[0]?.images?.backblaze_url;
+
+            const newItem: CartItem = {
+              product_id: product.id,
+              variant_id: selectedVariant.id,
+              product_name: product.name,
+              product_quality: selectedVariant.product_quality,
+              product_volume: selectedVariant.volume || 0,
+              product_sku: selectedVariant.sku,
+              unit_price: selectedVariant.price,
+              unit_mrp: selectedVariant.mrp,
+              quantity: added,
+              total_price: selectedVariant.price * added,
+              product_snapshot: {
+                // Store additional product metadata
+                name: product.name,
+                slug: product.slug,
+                category: product.category,
+                description: product.description,
+                fragrance_family: product.fragrance_family,
+                top_notes: product.top_notes,
+                middle_notes: product.middle_notes,
+                base_notes: product.base_notes,
+                additional_notes: product.additional_notes,
+                is_featured: product.is_featured,
+                image_url: firstImage,
+              },
+            };
+
             const updatedItems = [...state.items, newItem];
 
             set({
@@ -102,15 +155,25 @@ const useCartStore = create<CartState & CartActions>()(
         return result;
       },
 
-      removeItem: (id: string) => {
+      removeItem: (productId: string, variantId: string) => {
         const state = get();
-        const updatedItems = state.items.filter((item) => item.id !== id);
+        const updatedItems = state.items.filter(
+          (item) =>
+            !(item.product_id === productId && item.variant_id === variantId)
+        );
         set({ items: updatedItems });
       },
 
-      updateQuantity: (id: string, quantity: number) => {
+      updateQuantity: (
+        productId: string,
+        variantId: string,
+        quantity: number
+      ) => {
         const state = get();
-        const currentItem = state.items.find((item) => item.id === id);
+        const currentItem = state.items.find(
+          (item) =>
+            item.product_id === productId && item.variant_id === variantId
+        );
 
         if (!currentItem) {
           return { success: false, actualQuantity: 0 };
@@ -121,7 +184,13 @@ const useCartStore = create<CartState & CartActions>()(
 
         const updatedItems = state.items
           .map((item) =>
-            item.id === id ? { ...item, quantity: actualQuantity } : item
+            item.product_id === productId && item.variant_id === variantId
+              ? {
+                  ...item,
+                  quantity: actualQuantity,
+                  total_price: item.unit_price * actualQuantity,
+                }
+              : item
           )
           .filter((item) => item.quantity > 0);
 
@@ -164,12 +233,14 @@ interface CartContextType {
   items: CartItem[];
   isOpen: boolean;
   addItem: (
-    product: IProduct,
+    product: IProductDetail,
+    selectedVariantId: string,
     quantity?: number
   ) => { success: boolean; added: number; discarded: number };
-  removeItem: (id: string) => void;
+  removeItem: (productId: string, variantId: string) => void;
   updateQuantity: (
-    id: string,
+    productId: string,
+    variantId: string,
     quantity: number
   ) => { success: boolean; actualQuantity: number };
   clearCart: () => void;

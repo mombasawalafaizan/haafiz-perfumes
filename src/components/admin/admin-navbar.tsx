@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { LogOut, LayoutDashboard, Package } from "lucide-react";
+import { LogOut, LayoutDashboard, Package, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { logoutAdmin } from "@/lib/actions/auth";
 
@@ -57,6 +57,13 @@ export function AdminNavbar() {
               <Package className="h-4 w-4" />
               <span className="font-medium">Products</span>
             </Link>
+            <Link
+              href="/admin/orders"
+              className="flex items-center space-x-2 text-foreground hover:text-primary transition-colors"
+            >
+              <ShoppingCart className="h-4 w-4" />
+              <span className="font-medium">Orders</span>
+            </Link>
           </div>
 
           {/* Right Side - Logout */}
@@ -93,6 +100,13 @@ export function AdminNavbar() {
             >
               <Package className="h-4 w-4" />
               <span className="font-medium">Products</span>
+            </Link>
+            <Link
+              href="/admin/orders"
+              className="flex items-center space-x-2 text-foreground hover:text-primary transition-colors py-2"
+            >
+              <ShoppingCart className="h-4 w-4" />
+              <span className="font-medium">Orders</span>
             </Link>
             <div className="pt-2 border-t border-border">
               <div className="text-sm text-muted-foreground mb-2">

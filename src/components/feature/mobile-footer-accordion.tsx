@@ -1,11 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import {
-  // MailIcon,
-  // PhoneIcon,
-  MapPinIcon,
-} from "lucide-react";
+import { MailIcon, MapPinIcon } from "lucide-react";
+import { ExternalLink } from "@/components/ui/external-link";
 import {
   Accordion,
   AccordionContent,
@@ -95,16 +92,20 @@ export function MobileFooterAccordion() {
         <AccordionTrigger className="text-lg font-semibold text-foreground">
           Contact Info
         </AccordionTrigger>
-        <AccordionContent>
-          <div className="space-y-3">
-            {/* <div className="flex items-center space-x-3 text-muted-foreground">
-              <MailIcon className="h-5 w-5 text-primary" />
-              <span>hello@haafizperfumes.com</span>
-            </div> */}
-            <div className="flex items-center space-x-3 text-muted-foreground">
-              <WhatsAppIcon className="h-5 w-5 text-primary" />
-              <span>+91 96018 00822 (WhatsApp)</span>
-            </div>
+        <AccordionContent className="pb-0">
+          <div className="flex flex-col gap-3">
+            <ExternalLink href="mailto:haafizperfumescare@gmail.com">
+              <div className="flex items-center space-x-3 text-muted-foreground">
+                <MailIcon className="h-5 w-5 text-primary" />
+                <span>haafizperfumescare@gmail.com</span>
+              </div>
+            </ExternalLink>
+            <ExternalLink href="https://wa.me/919601800822">
+              <div className="flex items-center space-x-3 text-muted-foreground">
+                <WhatsAppIcon className="h-5 w-5 text-primary" />
+                <span>+91 96018 00822 (WhatsApp)</span>
+              </div>
+            </ExternalLink>
             <div className="flex items-start space-x-3 text-muted-foreground">
               <MapPinIcon className="h-5 w-5 text-primary mt-1" />
               <span>

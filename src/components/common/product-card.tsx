@@ -67,59 +67,9 @@ export function ProductCard({ product }: ProductCardProps) {
   const handleAddToCart = useCallback(() => {
     if (!lowestPriceVariant || !displayData) return;
 
-    const { displayPrice, displayMRP, displaySize } = displayData;
-    // Convert IProductDetail to IProduct format for cart
-    const productToAdd: IProduct = {
-      id: product.id,
-      name: product.name,
-      slug: product.slug,
-      imageUrl: productImageUrl,
-      priceMRP: displayMRP,
-      priceActual: displayPrice,
-      sizeMl: displaySize,
-      fragrance_family: product.fragrance_family
-        ? [product.fragrance_family]
-        : [],
-      top_notes: product.top_notes || "",
-      base_notes: product.base_notes || "",
-      middle_notes: product.middle_notes || "",
-      additional_notes: product.additional_notes || "",
-      description: product.description || "",
-      pricing:
-        product.product_variants?.map((variant) => ({
-          mrp: variant.mrp,
-          price: variant.price,
-          volume: variant.volume || 50,
-          stock: variant.stock,
-          quality: variant.product_quality as "Standard" | "Premium" | "Luxury",
-          sku: variant.sku,
-        })) || [],
-      category: product.category as "perfume" | "attar",
-    };
-
-    addItem(productToAdd, 1);
-
-    // if (result.success) {
-    //   if (result.discarded > 0) {
-    //     toast({
-    //       title: 'Cart limit reached! ⚠️',
-    //       description: `${result.added} × ${product.name} added to cart. ${result.discarded} items discarded (max 10 items allowed).`,
-    //       variant: 'destructive',
-    //     });
-    //   } else {
-    //     toast({
-    //       title: 'Added to cart! 🛍️',
-    //       description: `${product.name} has been added to your cart.`,
-    //     });
-    //   }
-    // } else {
-    //   toast({
-    //     title: 'Cart is full! 🛒',
-    //     description: 'Your cart has reached the maximum limit of 10 items. Please remove some items to add more.',
-    //     variant: 'destructive',
-    //   });
-    // }
-  }, [product, productImageUrl, displayData, lowestPriceVariant, addItem]);
+    // Pass the original product (IProductDetail) and selected variant ID to addItem
+    addItem(product, lowestPriceVariant.id, 1);
+  }, [product, displayData, lowestPriceVariant, addItem]);
 
   if (!lowestPriceVariant || !displayData) {
     return null; // Don't render if no variants
@@ -135,21 +85,16 @@ export function ProductCard({ product }: ProductCardProps) {
     >
       {layout === "horizontal" ? (
         // Horizontal layout
-        <div className="flex">
+        <div className="flex relative">
           {/* Left Section - Product Image */}
-          <div className="relative w-2/5 aspect-square overflow-hidden">
+          <div className="relative w-1/3 aspect-[3/4] overflow-hidden">
             <Image
               src={productImageUrl}
               alt={product.name}
               fill
-              sizes="40vw"
+              sizes="33vw"
               className="object-cover group-hover:scale-110 transition-transform duration-500"
             />
-            {discountPercentage > 0 && (
-              <Badge className="absolute top-2 left-2 md:top-3 md:left-3 bg-primary text-primary-foreground text-xs md:text-sm">
-                {discountPercentage}% OFF
-              </Badge>
-            )}
           </div>
 
           {/* Right Section - Product Details */}
@@ -157,7 +102,7 @@ export function ProductCard({ product }: ProductCardProps) {
             <div className="space-y-2">
               {/* Product Name and Size */}
               <div>
-                <h3 className="font-semibold text-sm md:text-lg text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                <h3 className="font-semibold text-md md:text-lg text-foreground group-hover:text-primary transition-colors line-clamp-2">
                   {product.name}
                 </h3>
                 {product.product_variants &&
@@ -204,7 +149,7 @@ export function ProductCard({ product }: ProductCardProps) {
       ) : (
         // Vertical layout
         <>
-          <div className="relative aspect-square overflow-hidden">
+          <div className="relative aspect-[3/4] overflow-hidden">
             <Image
               src={productImageUrl}
               alt={product.name}
