@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { getFeaturedProducts } from "@/lib/actions/product";
 import { HeroCarousel } from "@/components/feature/hero-carousel";
 import FeaturedProductsSection from "@/components/feature/featured-products";
+import { StructuredData } from "@/components/seo/structured-data";
 
 export const metadata: Metadata = {
   title: "Haafiz Perfumes",
@@ -31,12 +32,15 @@ export default async function HomePage() {
   const featuredProducts = await getFeaturedProducts();
 
   return (
-    <div>
-      {/* Hero Section */}
-      <HeroCarousel />
+    <>
+      <StructuredData type="organization" />
+      <div>
+        {/* Hero Section */}
+        <HeroCarousel />
 
-      {/* Featured Products */}
-      <FeaturedProductsSection products={featuredProducts} />
-    </div>
+        {/* Featured Products */}
+        <FeaturedProductsSection products={featuredProducts} />
+      </div>
+    </>
   );
 }
