@@ -6,7 +6,7 @@ import { getProductsByCategory } from "@/lib/actions/product";
 export const dynamic = "force-dynamic"; // For current frequent addition of products
 
 export const metadata: Metadata = {
-  title: "Authentic Attars | Haafiz Perfumes",
+  title: "Authentic Attars",
   description:
     "Discover our collection of traditional attars with modern sophistication. Premium fragrances crafted with authentic ingredients.",
   keywords: [
@@ -15,12 +15,19 @@ export const metadata: Metadata = {
     "premium fragrances",
     "haafiz perfumes",
     "attar collection",
+    "indian attars",
+    "surat attars",
+    "halal attars",
   ],
+  alternates: {
+    canonical: "/collections/attars",
+  },
   openGraph: {
-    title: "Authentic Attars | Haafiz Perfumes",
+    title: "Authentic Attars",
     description:
       "Discover our collection of traditional attars with modern sophistication.",
     type: "website",
+    url: "/collections/attars",
   },
 };
 

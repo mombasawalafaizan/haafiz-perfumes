@@ -6,7 +6,7 @@ import { getProductsByCategory } from "@/lib/actions/product";
 export const dynamic = "force-dynamic"; // For current frequent addition of products
 
 export const metadata: Metadata = {
-  title: "Premium Perfumes | Haafiz Perfumes",
+  title: "Premium Perfumes",
   description:
     "Discover our collection of luxury perfumes crafted with the finest ingredients. Premium fragrances for every occasion.",
   keywords: [
@@ -15,12 +15,19 @@ export const metadata: Metadata = {
     "premium fragrances",
     "haafiz perfumes",
     "perfume collection",
+    "indian perfumes",
+    "surat perfumes",
+    "halal perfumes",
   ],
+  alternates: {
+    canonical: "/collections/perfumes",
+  },
   openGraph: {
-    title: "Premium Perfumes | Haafiz Perfumes",
+    title: "Premium Perfumes",
     description:
       "Discover our collection of luxury perfumes crafted with the finest ingredients.",
     type: "website",
+    url: "/collections/perfumes",
   },
 };
 
