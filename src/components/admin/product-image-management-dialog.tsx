@@ -23,7 +23,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { IImage, IProductImage } from "@/types/product";
-import { uploadFile, deleteFile } from "@/lib/actions/upload";
+import { uploadFile } from "@/lib/actions/upload";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -144,10 +144,10 @@ function ProductImageManagementDialog({
         const image = images.find((img) => img.image_id! === imageId);
         if (!image) return;
 
-        // Delete image from Backblaze
-        const result = await deleteFile(image.backblaze_key!, image.filename!);
-        if (!result.success)
-          throw new Error(result.error || "Failed to delete image");
+        // Delete image from Backblaze (Commented as other products may use same images)
+        // const result = await deleteFile(image.backblaze_key!, image.filename!);
+        // if (!result.success)
+        //   throw new Error(result.error || "Failed to delete image");
 
         // Delete image from database
         const deleteImageResult = await deleteProductImage(imageId);
@@ -298,7 +298,7 @@ function ProductImageManagementDialog({
                           `relative group border rounded-lg overflow-hidden bg-muted/30`
                         )}
                       >
-                        <div className="aspect-square relative">
+                        <div className="aspect-[3/4] relative">
                           <Image
                             src={image.backblaze_url!}
                             alt={image.alt_text || `Product image`}

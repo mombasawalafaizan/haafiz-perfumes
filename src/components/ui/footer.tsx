@@ -16,7 +16,7 @@ import { WhatsAppIcon } from "@/components/ui/whatsapp-icon";
 export function Footer() {
   return (
     <footer className="bg-card border-t border-border">
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-8 md:py-12">
         {/* Desktop Layout */}
         <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
@@ -202,6 +202,14 @@ export function Footer() {
         <div className="border-t border-border md:mt-4 pt-8 text-center">
           <p className="text-muted-foreground">
             © 2025 Haafiz Perfumes. All rights reserved
+          </p>
+          <p className="text-muted-foreground mt-1">
+            Developed by{" "}
+            <ExternalLink href="mailto:mombasawalafaizan6@gmail.com">
+              <span className="font-bold text-primary font-mono hover:underline uppercase">
+                Faizan Mombasawala
+              </span>
+            </ExternalLink>
           </p>
         </div>
       </div>

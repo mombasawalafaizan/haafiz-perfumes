@@ -9,9 +9,14 @@ import {
   XIcon,
   EditIcon,
   TrashIcon,
+  CopyIcon,
 } from "lucide-react";
 import { IProductDetail } from "@/types/product";
-import { deleteProduct, getProducts } from "@/lib/actions/product";
+import {
+  cloneProduct,
+  deleteProduct,
+  getProducts,
+} from "@/lib/actions/product";
 import usePaginatedQuery from "@/hooks/usePaginatedQuery";
 import { getColumnOrdering } from "@/components/common/DataTable/DataTableUtils";
 import { formatDate, manipulateDate } from "@/lib/calendar";
@@ -70,8 +75,8 @@ export default function AdminProductsPage() {
   const [selectedProduct, setSelectedProduct] = useState<
     IProductDetail | undefined
   >();
+  const [cloningProductIds, setCloningProductIds] = useState<string[]>([]);
   const [deletingProductIds, setDeletingProductIds] = useState<string[]>([]);
-
   const params: IPaginationParams = useMemo(() => {
     const createdAtLte = filterState?.created_at?.to
       ? formatDate.iso(manipulateDate.addDays(filterState?.created_at?.to, 1))
@@ -125,10 +130,33 @@ export default function AdminProductsPage() {
     setIsEditProductOpen(true);
   };
 
-  const handleEditProduct = (product: IProductDetail) => {
+  const handleEditProduct = useCallback((product: IProductDetail) => {
     setSelectedProduct(product);
     setIsEditProductOpen(true);
-  };
+  }, []);
+
+  const handleCloneProduct = useCallback(
+    async (product: IProductDetail) => {
+      setCloningProductIds((prev) => [...prev, product.id]);
+      try {
+        const cloneProductRes = await cloneProduct(product.id);
+        if (cloneProductRes.success) {
+          toast.success("Product cloned successfully!");
+          refetch();
+        } else {
+          toast.error(cloneProductRes.error || "Failed to clone product!");
+        }
+      } catch (error) {
+        console.error("Error cloning product:", error);
+        toast.error(
+          error instanceof Error ? error.message : "Failed to clone product!"
+        );
+      } finally {
+        setCloningProductIds((prev) => prev.filter((id) => id !== product.id));
+      }
+    },
+    [refetch]
+  );
 
   const handleCloseEditProduct = (saved?: boolean) => {
     setIsEditProductOpen(false);
@@ -257,6 +285,16 @@ export default function AdminProductsPage() {
               Edit
             </Button>
             <Button
+              variant="secondary"
+              size="xs"
+              className="text-xs"
+              loading={cloningProductIds.includes(row.original.id)}
+              onClick={() => handleCloneProduct(row.original)}
+            >
+              <CopyIcon className="size-3" />
+              Clone
+            </Button>
+            <Button
               variant="error"
               size="xs"
               className="text-xs"
@@ -271,13 +309,19 @@ export default function AdminProductsPage() {
           </div>
         ),
         meta: {
-          width: "150px",
-          minWidth: "80px",
+          width: "215px",
+          minWidth: "215px",
         },
         enableSorting: false,
       },
     ],
-    [deletingProductIds, onClickDeleteProduct]
+    [
+      cloningProductIds,
+      deletingProductIds,
+      onClickDeleteProduct,
+      handleCloneProduct,
+      handleEditProduct,
+    ]
   );
 
   return (

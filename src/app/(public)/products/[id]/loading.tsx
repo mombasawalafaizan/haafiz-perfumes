@@ -6,7 +6,7 @@ export default function ProductDetailLoading() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* Product Image Skeleton */}
         <div className="space-y-4">
-          <Skeleton className="aspect-square w-full rounded-lg" />
+          <Skeleton className="aspect-[3/4] w-full rounded-lg" />
           <div className="hidden md:flex justify-center space-x-2">
             {Array.from({ length: 4 }).map((_, index) => (
               <Skeleton key={index} className="w-20 h-20 rounded-lg" />

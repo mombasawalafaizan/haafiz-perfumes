@@ -202,11 +202,11 @@ export function CheckoutForm({ className }: CheckoutFormProps) {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="flex flex-col gap-6"
+          className="flex flex-col gap-4"
         >
           {/* Customer Information */}
           <Card>
-            <CardHeader className="pt-0 md:pt-4 px-4">
+            <CardHeader className="pt-2 md:pt-4 px-4">
               <CardTitle>Customer Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6 px-4">
@@ -320,7 +320,7 @@ export function CheckoutForm({ className }: CheckoutFormProps) {
                       <FormControl>
                         <Input
                           className="border-foreground"
-                          placeholder="Enter your city"
+                          placeholder="Enter city"
                           {...field}
                         />
                       </FormControl>
@@ -340,7 +340,7 @@ export function CheckoutForm({ className }: CheckoutFormProps) {
                       >
                         <FormControl>
                           <SelectTrigger className="border-foreground w-full max-w-full truncate">
-                            <SelectValue placeholder="Select your state" />
+                            <SelectValue placeholder="Select state" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -364,7 +364,7 @@ export function CheckoutForm({ className }: CheckoutFormProps) {
                       <FormControl>
                         <Input
                           className="border-foreground"
-                          placeholder="Enter your pincode"
+                          placeholder="Enter pincode"
                           {...field}
                         />
                       </FormControl>
@@ -378,7 +378,7 @@ export function CheckoutForm({ className }: CheckoutFormProps) {
 
           {/* Payment Method */}
           <Card>
-            <CardHeader className="px-4 pt-0">
+            <CardHeader className="px-4 pt-2">
               <CardTitle>Payment Method</CardTitle>
             </CardHeader>
             <CardContent className="px-4 pb-0">

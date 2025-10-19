@@ -45,7 +45,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Plus, Trash2, ImageIcon, Package, Loader2 } from "lucide-react";
-import { VariantImageManagementDialog } from "./variant-image-management-dialog";
+import { VariantImageManagementDialog } from "@/components/admin/variant-image-management-dialog";
 import {
   productVariantsSchema,
   ProductVariantsFormData,

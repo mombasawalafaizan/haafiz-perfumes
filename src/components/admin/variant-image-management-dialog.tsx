@@ -260,7 +260,7 @@ export function VariantImageManagementDialog({
                           )}
                           onClick={() => handleImageSelection(image.images.id)}
                         >
-                          <div className="aspect-square relative">
+                          <div className="aspect-[3/4] relative">
                             <Image
                               src={image.images.backblaze_url}
                               alt={image.images.alt_text || `Product image`}

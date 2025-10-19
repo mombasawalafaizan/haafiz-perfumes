@@ -6,7 +6,7 @@ export function ProductCardSkeleton() {
     <Card className="overflow-hidden border-2 border-primary/20 bg-gradient-card">
       <div className="flex md:hidden">
         {/* Left Section - Product Image */}
-        <div className="relative w-2/5 aspect-square overflow-hidden">
+        <div className="relative w-2/5 aspect-[3/4] overflow-hidden">
           <Skeleton className="h-full w-full" />
         </div>
 
@@ -32,7 +32,7 @@ export function ProductCardSkeleton() {
           <Skeleton className="h-8 w-full rounded-md" />
         </div>
       </div>
-      <div className="hidden md:block relative aspect-square overflow-hidden">
+      <div className="hidden md:block relative aspect-[3/4] overflow-hidden">
         <Skeleton className="h-full w-full" />
       </div>
       <CardContent className="hidden md:block p-3 md:p-4">

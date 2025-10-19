@@ -9,7 +9,7 @@ import { useCart } from "@/hooks/useCart";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { calculateCartMeta } from "@/lib/utils";
-import { SearchProducts } from "./search-products";
+import { SearchProducts } from "@/components/feature/search-products";
 
 export function Navbar() {
   const { items, setCartOpen } = useCart();

@@ -14,6 +14,7 @@ import {
   IQueryResult,
   ISupabaseQueryConfig,
 } from "@/types/query";
+import { createProductSlug } from "@/lib/utils";
 
 const PRODUCT_DETAIL_QUERY = `
         id,
@@ -311,7 +312,7 @@ export async function updateProduct(
     }
 
     revalidatePath(`/collections/${productData.category}`);
-    revalidatePath("/products/[id]", "page");
+    revalidatePath(`/products/${productData.slug}`, "page");
     return { success: true, data };
   } catch (error) {
     console.error("Error in updateProduct:", error);
@@ -344,6 +345,74 @@ export async function deleteProduct(id: string, productMeta?: IProductDetail) {
     console.error("Error in deleteProduct:", error);
     return {
       success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+      data: null,
+    };
+  }
+}
+
+export async function cloneProduct(productId: string) {
+  try {
+    const { data, error } = await supabase
+      .from("products")
+      .select(
+        `
+        name,
+        description,
+        category,
+        fragrance_family,
+        description,
+        top_notes,
+        middle_notes,
+        base_notes,
+        additional_notes,
+        product_images (*)
+      `
+      )
+      .eq("id", productId);
+
+    const productData = data?.[0];
+    if (error) {
+      console.error("Error cloning product:", error);
+      throw new Error(
+        `Failed to clone product: ${error?.message || "Unknown error"}`
+      );
+    }
+
+    const productName = `${productData?.name} (Cloned)`;
+    const productToCreate: Partial<IProduct> = {
+      name: productName,
+      slug: createProductSlug(productName),
+      category: productData?.category || "perfume",
+      fragrance_family: productData?.fragrance_family || "",
+      description: productData?.description || "",
+      top_notes: productData?.top_notes || "",
+      middle_notes: productData?.middle_notes || "",
+      base_notes: productData?.base_notes || "",
+      additional_notes: productData?.additional_notes || "",
+      is_featured: false,
+    };
+
+    const createCloneProductRes = await createProduct(productToCreate);
+
+    if (createCloneProductRes.success) {
+      const clonedProductId = createCloneProductRes.data?.id;
+      const productImages: Partial<IProductImage>[] =
+        productData?.product_images?.map((image) => ({
+          product_id: clonedProductId!,
+          image_id: image.image_id!,
+          display_order: image.display_order!,
+          is_primary: image.is_primary!,
+        })) || [];
+      await bulkUpsertProductImages(productImages);
+    }
+
+    return { success: true, data: createCloneProductRes.data };
+  } catch (error) {
+    console.error("Error in cloneProduct:", error);
+    return {
+      success: false,
+      data: null,
       error: error instanceof Error ? error.message : "Unknown error",
     };
   }

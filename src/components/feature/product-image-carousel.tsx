@@ -165,7 +165,7 @@ export function ProductImageCarousel({ product }: ProductImageCarouselProps) {
                 <CarouselContent>
                   {displayImages.map((image, index) => (
                     <CarouselItem key={index}>
-                      <div className="relative aspect-square overflow-hidden rounded-lg bg-muted/20">
+                      <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-muted/20">
                         <Image
                           src={image}
                           alt={`${product.name} - Image ${index + 1}`}
