@@ -42,7 +42,7 @@ export function AdminNavbar() {
           </div>
 
           {/* Center - Navigation Links */}
-          <div className="hidden md:flex items-center space-x-6">
+          <div className="hidden md:flex items-center space-x-10">
             <Link
               href="/admin/dashboard"
               className="flex items-center space-x-2 text-foreground hover:text-primary transition-colors"
