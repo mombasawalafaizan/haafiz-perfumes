@@ -395,17 +395,17 @@ export async function cloneProduct(productId: string) {
 
     const createCloneProductRes = await createProduct(productToCreate);
 
-    if (createCloneProductRes.success) {
-      const clonedProductId = createCloneProductRes.data?.id;
-      const productImages: Partial<IProductImage>[] =
-        productData?.product_images?.map((image) => ({
-          product_id: clonedProductId!,
-          image_id: image.image_id!,
-          display_order: image.display_order!,
-          is_primary: image.is_primary!,
-        })) || [];
-      await bulkUpsertProductImages(productImages);
-    }
+    // if (createCloneProductRes.success) {
+    //   const clonedProductId = createCloneProductRes.data?.id;
+    //   const productImages: Partial<IProductImage>[] =
+    //     productData?.product_images?.map((image) => ({
+    //       product_id: clonedProductId!,
+    //       image_id: image.image_id!,
+    //       display_order: image.display_order!,
+    //       is_primary: image.is_primary!,
+    //     })) || [];
+    //   await bulkUpsertProductImages(productImages);
+    // }
 
     return { success: true, data: createCloneProductRes.data };
   } catch (error) {
