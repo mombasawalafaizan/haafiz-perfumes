@@ -10,15 +10,29 @@ export const metadata: Metadata = {
     "Discover our exquisite collection of luxury perfumes and authentic attars, crafted with the finest ingredients from around the world.",
   keywords: [
     "perfumes",
+    "perfume",
     "attars",
+    "attar",
     "surat",
     "halal",
     "fragrances",
+    "fragrance",
     "indian perfumes",
     "indian attars",
     "haafiz perfumes",
+    "hafiz perfumes",
+    "haafiz perfume",
+    "hafiz perfume",
+    "hafeez perfumes",
+    "haafeez perfumes",
+    "hafeez perfume",
+    "haafeez perfume",
     "perfume collection",
     "attar collection",
+    "luxury perfumes",
+    "premium fragrances",
+    "traditional attars",
+    "authentic attars",
   ],
   openGraph: {
     title: "Haafiz Perfumes",
@@ -34,6 +48,7 @@ export default async function HomePage() {
   return (
     <>
       <StructuredData type="organization" />
+      <StructuredData type="website" />
       <div>
         {/* Hero Section */}
         <HeroCarousel />

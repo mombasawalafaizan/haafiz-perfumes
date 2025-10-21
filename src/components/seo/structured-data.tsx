@@ -1,7 +1,7 @@
 import { IProductDetail } from "@/types/product";
 
 interface StructuredDataProps {
-  type: "organization" | "product" | "breadcrumb";
+  type: "organization" | "product" | "breadcrumb" | "website";
   data?: any;
 }
 
@@ -13,25 +13,67 @@ export function StructuredData({ type, data }: StructuredDataProps) {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: "Haafiz Perfumes",
+    alternateName: [
+      "Hafiz Perfumes",
+      "Haafiz Perfume",
+      "Hafiz Perfume",
+      "Hafeez Perfumes",
+      "Haafeez Perfumes",
+      "Hafeez Perfume",
+      "Haafeez Perfume",
+    ],
     description:
-      "Luxury perfumes and authentic attars crafted with the finest ingredients from around the world",
+      "Luxury perfumes and authentic attars crafted with the finest ingredients from around the world. Premium fragrances for every occasion.",
     url: baseUrl,
-    logo: `${baseUrl}/haafiz_perfumes_logo.png`,
-    image: `${baseUrl}/haafiz_perfumes_branding.png`,
+    logo: {
+      "@type": "ImageObject",
+      url: `${baseUrl}/haafiz_perfumes_logo.png`,
+      width: 512,
+      height: 512,
+      caption: "Haafiz Perfumes Logo",
+    },
+    image: {
+      "@type": "ImageObject",
+      url: `${baseUrl}/haafiz_perfumes_branding.png`,
+      width: 1200,
+      height: 630,
+      caption: "Haafiz Perfumes Branding",
+    },
     sameAs: [
-      // Add social media URLs when available
+      "https://www.instagram.com/haafiz_perfumes.in/",
+      "https://www.facebook.com/haafiz.perfumes/",
+      "https://wa.me/919601800822",
     ],
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer service",
+      email: "haafizperfumescare@gmail.com",
+      telephone: "+91-96018-00822",
       availableLanguage: ["English", "Hindi", "Gujarati"],
     },
     address: {
       "@type": "PostalAddress",
+      streetAddress: "Muglisara",
       addressLocality: "Surat",
       addressRegion: "Gujarat",
+      postalCode: "395003",
       addressCountry: "IN",
     },
+    foundingDate: "2020",
+    founder: {
+      "@type": "Person",
+      name: "Haafiz Perfumes",
+    },
+    keywords:
+      "perfumes, attars, luxury fragrances, haafiz perfumes, hafiz perfumes, hafeez perfumes, haafeez perfumes, indian perfumes, authentic attars, surat perfumes, halal perfumes",
+    knowsAbout: [
+      "Perfumes",
+      "Attars",
+      "Fragrances",
+      "Luxury Scents",
+      "Traditional Attars",
+      "Premium Perfumes",
+    ],
   });
 
   const getProductSchema = (product: IProductDetail) => {
@@ -111,10 +153,50 @@ export function StructuredData({ type, data }: StructuredDataProps) {
     })),
   });
 
+  const getWebsiteSchema = () => ({
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Haafiz Perfumes",
+    alternateName: [
+      "Hafiz Perfumes",
+      "Haafiz Perfume",
+      "Hafiz Perfume",
+      "Hafeez Perfumes",
+      "Haafeez Perfumes",
+      "Hafeez Perfume",
+      "Haafeez Perfume",
+    ],
+    url: baseUrl,
+    description:
+      "Luxury perfumes and authentic attars crafted with the finest ingredients from around the world. Premium fragrances for every occasion.",
+    publisher: {
+      "@type": "Organization",
+      name: "Haafiz Perfumes",
+      logo: {
+        "@type": "ImageObject",
+        url: `${baseUrl}/haafiz_perfumes_logo.png`,
+        width: 512,
+        height: 512,
+      },
+    },
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${baseUrl}/collections?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
+    keywords:
+      "perfumes, attars, luxury fragrances, haafiz perfumes, hafiz perfumes, hafeez perfumes, haafeez perfumes, indian perfumes, authentic attars, surat perfumes, halal perfumes",
+  });
+
   const getSchema = () => {
     switch (type) {
       case "organization":
         return getOrganizationSchema();
+      case "website":
+        return getWebsiteSchema();
       case "product":
         return data ? getProductSchema(data) : null;
       case "breadcrumb":
