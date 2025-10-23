@@ -1,0 +1,50 @@
+name: Database Backup
+
+on:
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: "0 2 * * *"
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Create backup
+        run: |
+          mkdir -p backups
+          node scripts/backup-db.js
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+
+      - name: Upload backup to GitHub Releases
+        uses: actions/upload-artifact@v4
+        with:
+          name: database-backup-${{ github.run_number }}
+          path: backups/
+          retention-days: 30
+
+      - name: Create Release
+        if: github.event_name == 'schedule'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: backup-${{ github.run_number }}
+          release_name: Database Backup ${{ github.run_number }}
+          body: |
+            Automated database backup
+            - Date: ${{ github.run_number }}
+            - Tables: products, orders, order_items, hero_slides, images, product_images, product_variants, variant_images
+          draft: false
+          prerelease: false
