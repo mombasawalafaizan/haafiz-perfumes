@@ -61,7 +61,7 @@ export function StructuredData({ type, data }: StructuredDataProps) {
     },
     foundingDate: "2020",
     founder: {
-      "@type": "Person",
+      "@type": "Saeed Akbar",
       name: "Haafiz Perfumes",
     },
     keywords:

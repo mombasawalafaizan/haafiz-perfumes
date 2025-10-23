@@ -29,6 +29,7 @@ import { formatDate } from "@/lib/calendar";
 import { toast } from "sonner";
 import { Package, User, MapPin, Phone, Mail, Truck } from "lucide-react";
 import Image from "next/image";
+import { getAdminQueryClient } from "@/lib/query-client";
 
 interface OrderManageProps {
   isOpen: boolean;
@@ -84,6 +85,9 @@ export function OrderManage({ isOpen, onClose, order }: OrderManageProps) {
 
       if (result.success) {
         toast.success("Order status updated successfully!");
+        getAdminQueryClient().invalidateQueries({
+          queryKey: ["orders"],
+        });
         onClose();
       } else {
         toast.error(result.error || "Failed to update order status");

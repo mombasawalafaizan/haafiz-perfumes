@@ -88,7 +88,7 @@ export default function AdminOrdersPage() {
   }, [page, pageSize, search, sorting, filterState]);
 
   const { data, isLoading, error } = usePaginatedQuery(
-    ["orders"],
+    ["orders", params],
     getOrders,
     params
   );

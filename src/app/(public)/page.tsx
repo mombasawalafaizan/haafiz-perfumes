@@ -40,6 +40,9 @@ export const metadata: Metadata = {
       "Discover our collection of luxury perfumes and authentic attars, crafted with the finest ingredients from around the world.",
     type: "website",
   },
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default async function HomePage() {
