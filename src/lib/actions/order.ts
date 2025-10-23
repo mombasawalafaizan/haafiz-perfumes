@@ -185,6 +185,7 @@ export async function getOrders(params: IPaginationParams) {
         updated_at,
         notes,
         admin_notes,
+        tracking_number,
         order_items (*)
       `,
     searchFields: ["order_number", "customer_name"],
@@ -214,6 +215,7 @@ export async function updateOrderStatus(
   status: TOrderStatus,
   paymentStatus?: TPaymentStatus,
   notes?: string,
+  trackingNumber?: string,
   _updatedBy: string = "admin" // eslint-disable-line @typescript-eslint/no-unused-vars
 ): Promise<IQueryResult<null>> {
   try {
@@ -225,6 +227,10 @@ export async function updateOrderStatus(
 
     if (paymentStatus) {
       updateData.payment_status = paymentStatus;
+    }
+
+    if (trackingNumber) {
+      updateData.tracking_number = trackingNumber;
     }
 
     const { error: updateError } = await supabase

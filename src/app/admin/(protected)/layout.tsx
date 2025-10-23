@@ -3,6 +3,7 @@ import { AdminNavbar } from "@/components/admin/admin-navbar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "@/components/admin/theme-provider";
 import { setAdminQueryClient } from "@/lib/query-client";
+import AdminErrorBoundary from "@/components/admin/error-boundary";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -31,7 +32,9 @@ export default function ProtectedAdminLayout({
       >
         <div className="min-h-screen bg-background">
           <AdminNavbar />
-          <main className="container mx-auto px-4 py-8">{children}</main>
+          <main className="container mx-auto px-4 py-8">
+            <AdminErrorBoundary>{children}</AdminErrorBoundary>
+          </main>
         </div>
       </ThemeProvider>
     </QueryClientProvider>

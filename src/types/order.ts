@@ -87,6 +87,7 @@ export interface IOrder {
   // Additional fields
   notes?: string;
   admin_notes?: string;
+  tracking_number?: string;
 }
 
 // Order with items

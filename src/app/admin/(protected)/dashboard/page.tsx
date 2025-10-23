@@ -1,12 +1,17 @@
+"use client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LayoutDashboard, Package, Users, ShoppingCart } from "lucide-react";
 import { getDashboardData } from "@/lib/actions/dashboard";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
+import { useQuery } from "@tanstack/react-query";
+import PageLoader from "@/components/admin/page-loader";
 
-export default async function AdminDashboardPage() {
-  const dashboardData = await getDashboardData();
-  const { stats, recentActivities } = dashboardData;
+export default function AdminDashboardPage() {
+  const { data: dashboardData, isLoading } = useQuery({
+    queryKey: ["dashboard"],
+    queryFn: getDashboardData,
+  });
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-IN", {
@@ -29,7 +34,9 @@ export default async function AdminDashboardPage() {
     }
   };
 
-  return (
+  return isLoading ? (
+    <PageLoader />
+  ) : (
     <div className="space-y-8">
       {/* Welcome Section */}
       <div className="text-center">
@@ -52,7 +59,9 @@ export default async function AdminDashboardPage() {
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalProducts}</div>
+            <div className="text-2xl font-bold">
+              {dashboardData?.stats?.totalProducts}
+            </div>
           </CardContent>
         </Card>
 
@@ -62,7 +71,9 @@ export default async function AdminDashboardPage() {
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalOrders}</div>
+            <div className="text-2xl font-bold">
+              {dashboardData?.stats?.totalOrders}
+            </div>
           </CardContent>
         </Card>
 
@@ -73,7 +84,7 @@ export default async function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {formatCurrency(stats.totalRevenue)}
+              {formatCurrency(dashboardData?.stats?.totalRevenue || 0)}
             </div>
           </CardContent>
         </Card>
@@ -84,7 +95,9 @@ export default async function AdminDashboardPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalCustomers}</div>
+            <div className="text-2xl font-bold">
+              {dashboardData?.stats?.totalCustomers || 0}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -129,8 +142,8 @@ export default async function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentActivities.length > 0 ? (
-                recentActivities.map((activity) => (
+              {!!dashboardData?.recentActivities?.length ? (
+                dashboardData?.recentActivities.map((activity) => (
                   <div
                     key={activity.id}
                     className="flex items-center space-x-3"

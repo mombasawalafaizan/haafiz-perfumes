@@ -3,12 +3,21 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { LogOut, LayoutDashboard, Package, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { logoutAdmin } from "@/lib/actions/auth";
 
 export function AdminNavbar() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const pathname = usePathname();
+
+  const isActive = (path: string) => {
+    if (path === "/admin/dashboard") {
+      return pathname === "/admin/dashboard";
+    }
+    return pathname.startsWith(path);
+  };
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -45,21 +54,36 @@ export function AdminNavbar() {
           <div className="hidden md:flex items-center space-x-10">
             <Link
               href="/admin/dashboard"
-              className="flex items-center space-x-2 text-foreground hover:text-primary transition-colors"
+              prefetch={true}
+              className={`flex items-center space-x-2 transition-colors rounded-lg px-3 py-2 ${
+                isActive("/admin/dashboard")
+                  ? "text-primary bg-primary/10 shadow-sm"
+                  : "text-foreground hover:text-primary hover:bg-accent"
+              }`}
             >
               <LayoutDashboard className="h-4 w-4" />
               <span className="font-medium">Dashboard</span>
             </Link>
             <Link
               href="/admin/products"
-              className="flex items-center space-x-2 text-foreground hover:text-primary transition-colors"
+              prefetch={true}
+              className={`flex items-center space-x-2 transition-colors rounded-lg px-3 py-2 ${
+                isActive("/admin/products")
+                  ? "text-primary bg-primary/10 shadow-sm"
+                  : "text-foreground hover:text-primary hover:bg-accent"
+              }`}
             >
               <Package className="h-4 w-4" />
               <span className="font-medium">Products</span>
             </Link>
             <Link
               href="/admin/orders"
-              className="flex items-center space-x-2 text-foreground hover:text-primary transition-colors"
+              prefetch={true}
+              className={`flex items-center space-x-2 transition-colors rounded-lg px-3 py-2 ${
+                isActive("/admin/orders")
+                  ? "text-primary bg-primary/10 shadow-sm"
+                  : "text-foreground hover:text-primary hover:bg-accent"
+              }`}
             >
               <ShoppingCart className="h-4 w-4" />
               <span className="font-medium">Orders</span>
@@ -89,21 +113,36 @@ export function AdminNavbar() {
           <div className="flex flex-col space-y-3">
             <Link
               href="/admin/dashboard"
-              className="flex items-center space-x-2 text-foreground hover:text-primary transition-colors py-2"
+              prefetch={true}
+              className={`flex items-center space-x-2 transition-colors rounded-lg px-3 py-2 ${
+                isActive("/admin/dashboard")
+                  ? "text-primary bg-primary/10 shadow-sm"
+                  : "text-foreground hover:text-primary hover:bg-accent"
+              }`}
             >
               <LayoutDashboard className="h-4 w-4" />
               <span className="font-medium">Dashboard</span>
             </Link>
             <Link
               href="/admin/products"
-              className="flex items-center space-x-2 text-foreground hover:text-primary transition-colors py-2"
+              prefetch={true}
+              className={`flex items-center space-x-2 transition-colors rounded-lg px-3 py-2 ${
+                isActive("/admin/products")
+                  ? "text-primary bg-primary/10 shadow-sm"
+                  : "text-foreground hover:text-primary hover:bg-accent"
+              }`}
             >
               <Package className="h-4 w-4" />
               <span className="font-medium">Products</span>
             </Link>
             <Link
               href="/admin/orders"
-              className="flex items-center space-x-2 text-foreground hover:text-primary transition-colors py-2"
+              prefetch={true}
+              className={`flex items-center space-x-2 transition-colors rounded-lg px-3 py-2 ${
+                isActive("/admin/orders")
+                  ? "text-primary bg-primary/10 shadow-sm"
+                  : "text-foreground hover:text-primary hover:bg-accent"
+              }`}
             >
               <ShoppingCart className="h-4 w-4" />
               <span className="font-medium">Orders</span>

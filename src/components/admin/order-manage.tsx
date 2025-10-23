@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { IOrderDetail, TOrderStatus, TPaymentStatus } from "@/types/order";
 import { updateOrderStatus } from "@/lib/actions/order";
 import { formatDate } from "@/lib/calendar";
@@ -57,12 +58,14 @@ export function OrderManage({ isOpen, onClose, order }: OrderManageProps) {
   const [newPaymentStatus, setNewPaymentStatus] =
     useState<TPaymentStatus>("pending");
   const [adminNotes, setAdminNotes] = useState("");
+  const [trackingNumber, setTrackingNumber] = useState("");
 
   useEffect(() => {
     if (order) {
       setNewStatus(order.status);
       setNewPaymentStatus(order.payment_status);
       setAdminNotes(order.admin_notes || "");
+      setTrackingNumber(order.tracking_number || "");
     }
   }, [order]);
 
@@ -75,7 +78,8 @@ export function OrderManage({ isOpen, onClose, order }: OrderManageProps) {
         order.id,
         newStatus,
         newPaymentStatus,
-        adminNotes
+        adminNotes,
+        trackingNumber
       );
 
       if (result.success) {
@@ -122,7 +126,10 @@ export function OrderManage({ isOpen, onClose, order }: OrderManageProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] min-w-3xl">
+      <DialogContent
+        aria-describedby={undefined}
+        className="max-w-6xl max-h-[95vh] min-w-3xl"
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Package className="h-5 w-5" />
@@ -195,6 +202,16 @@ export function OrderManage({ isOpen, onClose, order }: OrderManageProps) {
                         Customer Notes
                       </Label>
                       <p className="capitalize">{order.notes}</p>
+                    </div>
+                  )}
+                  {order.tracking_number && (
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">
+                        Tracking Number
+                      </Label>
+                      <p className="font-mono text-sm">
+                        {order.tracking_number}
+                      </p>
                     </div>
                   )}
                   <div>
@@ -410,6 +427,26 @@ export function OrderManage({ isOpen, onClose, order }: OrderManageProps) {
                     </Select>
                   </div>
                 </div>
+                {(newStatus === "processing" ||
+                  newStatus === "shipped" ||
+                  newStatus === "delivered") && (
+                  <div className="flex flex-col gap-1">
+                    <Label htmlFor="tracking-number">
+                      Tracking Number
+                      <span className="text-error">*</span>
+                    </Label>
+                    <Input
+                      id="tracking-number"
+                      placeholder="Enter tracking number..."
+                      value={trackingNumber}
+                      onChange={(e) => setTrackingNumber(e.target.value)}
+                      className="mt-1"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Required for {newStatus} orders
+                    </p>
+                  </div>
+                )}
                 <div className="flex flex-col gap-1">
                   <Label htmlFor="admin-notes">Admin Notes</Label>
                   <Textarea
