@@ -8,31 +8,13 @@
 import fs from "fs";
 import path from "path";
 
-// Load environment variables from .env.local
-
-function loadEnvFile() {
-  const envPath = path.join(process.cwd(), ".env.local");
-  if (fs.existsSync(envPath)) {
-    const envContent = fs.readFileSync(envPath, "utf8");
-    const envVars = {};
-    envContent.split("\n").forEach((line) => {
-      const [key, ...valueParts] = line.split("=");
-      if (key && valueParts.length > 0) {
-        envVars[key.trim()] = valueParts.join("=").trim();
-      }
-    });
-    return envVars;
-  }
-  return {};
-}
-
-const env = loadEnvFile();
-const supabaseUrl = env.SUPABASE_URL;
-const supabaseAnonKey = env.SUPABASE_ANON_KEY;
+// Get environment variables (works in both local .env and GitHub Actions)
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.error("❌ Missing Supabase credentials in .env.local");
-  console.error("Please add:");
+  console.error("❌ Missing Supabase credentials");
+  console.error("Please set environment variables:");
   console.error("SUPABASE_URL=your_supabase_url");
   console.error("SUPABASE_ANON_KEY=your_supabase_anon_key");
   process.exit(1);
