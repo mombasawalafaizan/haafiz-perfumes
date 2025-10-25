@@ -11,29 +11,10 @@ import https from "https";
 import { gzip } from "zlib";
 import { promisify } from "util";
 
-// Load environment variables from .env.local
-function loadEnvFile() {
-  const envPath = path.join(process.cwd(), ".env.local");
-  if (fs.existsSync(envPath)) {
-    const envContent = fs.readFileSync(envPath, "utf8");
-    const envVars = {};
-    envContent.split("\n").forEach((line) => {
-      const [key, ...valueParts] = line.split("=");
-      if (key && valueParts.length > 0) {
-        envVars[key.trim()] = valueParts.join("=").trim();
-      }
-    });
-    return envVars;
-  }
-  return {};
-}
-
-const env = loadEnvFile();
-
-// Configuration
+// Configuration - Get from environment variables (works in both local .env and GitHub Actions)
 const config = {
-  supabaseUrl: env.SUPABASE_URL,
-  supabaseAnonKey: env.SUPABASE_ANON_KEY,
+  supabaseUrl: process.env.SUPABASE_URL,
+  supabaseAnonKey: process.env.SUPABASE_ANON_KEY,
   backupDir: "./backups",
   maxBackups: 7,
 };

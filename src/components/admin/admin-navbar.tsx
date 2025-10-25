@@ -4,7 +4,13 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LogOut, LayoutDashboard, Package, ShoppingCart } from "lucide-react";
+import {
+  LogOut,
+  LayoutDashboard,
+  Package,
+  ShoppingCart,
+  ImageIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { logoutAdmin } from "@/lib/actions/auth";
 
@@ -88,6 +94,18 @@ export function AdminNavbar() {
               <ShoppingCart className="h-4 w-4" />
               <span className="font-medium">Orders</span>
             </Link>
+            <Link
+              href="/admin/hero-slides"
+              prefetch={true}
+              className={`flex items-center space-x-2 transition-colors rounded-lg px-3 py-2 ${
+                isActive("/admin/hero-slides")
+                  ? "text-primary bg-primary/10 shadow-sm"
+                  : "text-foreground hover:text-primary hover:bg-accent"
+              }`}
+            >
+              <ImageIcon className="h-4 w-4" />
+              <span className="font-medium">Hero Slides</span>
+            </Link>
           </div>
 
           {/* Right Side - Logout */}
@@ -146,6 +164,18 @@ export function AdminNavbar() {
             >
               <ShoppingCart className="h-4 w-4" />
               <span className="font-medium">Orders</span>
+            </Link>
+            <Link
+              href="/admin/hero-slides"
+              prefetch={true}
+              className={`flex items-center space-x-2 transition-colors rounded-lg px-3 py-2 ${
+                isActive("/admin/hero-slides")
+                  ? "text-primary bg-primary/10 shadow-sm"
+                  : "text-foreground hover:text-primary hover:bg-accent"
+              }`}
+            >
+              <ImageIcon className="h-4 w-4" />
+              <span className="font-medium">Hero Slides</span>
             </Link>
             <div className="pt-2 border-t border-border">
               <div className="text-sm text-muted-foreground mb-2">

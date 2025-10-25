@@ -1,6 +1,12 @@
 "use client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LayoutDashboard, Package, Users, ShoppingCart } from "lucide-react";
+import {
+  LayoutDashboard,
+  Package,
+  Users,
+  ShoppingCart,
+  ImageIcon,
+} from "lucide-react";
 import { getDashboardData } from "@/lib/actions/dashboard";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
@@ -129,6 +135,16 @@ export default function AdminDashboardPage() {
                 <div className="font-medium">View Orders</div>
                 <div className="text-sm text-muted-foreground">
                   Track and manage orders
+                </div>
+              </Link>
+              <Link
+                href="/admin/hero-slides"
+                className="p-4 border rounded-lg hover:bg-accent transition-colors"
+              >
+                <ImageIcon className="h-6 w-6 mb-2" />
+                <div className="font-medium">Hero Slides</div>
+                <div className="text-sm text-muted-foreground">
+                  Manage homepage carousel
                 </div>
               </Link>
             </div>

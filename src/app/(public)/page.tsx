@@ -3,6 +3,7 @@ import { getFeaturedProducts } from "@/lib/actions/product";
 import { HeroCarousel } from "@/components/feature/hero-carousel";
 import FeaturedProductsSection from "@/components/feature/featured-products";
 import { StructuredData } from "@/components/seo/structured-data";
+import { getHeroSlides } from "@/lib/actions/hero-slides";
 
 export const metadata: Metadata = {
   title: "Haafiz Perfumes",
@@ -46,6 +47,7 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
+  const heroSlides = await getHeroSlides();
   const featuredProducts = await getFeaturedProducts();
 
   return (
@@ -54,7 +56,7 @@ export default async function HomePage() {
       <StructuredData type="website" />
       <div>
         {/* Hero Section */}
-        <HeroCarousel />
+        <HeroCarousel heroSlides={heroSlides || []} />
 
         {/* Featured Products */}
         <FeaturedProductsSection products={featuredProducts} />
