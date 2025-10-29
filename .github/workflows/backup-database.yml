@@ -9,6 +9,8 @@ on:
 jobs:
   backup:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # Required to create releases
 
     steps:
       - name: Checkout code
@@ -36,15 +38,15 @@ jobs:
 
       - name: Create Release
         if: github.event_name == 'schedule'
-        uses: actions/create-release@v1
+        run: |
+          gh release create "backup-${{ github.run_number }}" \
+            --title "Database Backup ${{ github.run_number }}" \
+            --notes "Automated database backup
+          - Date: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          - Run Number: ${{ github.run_number }}
+          - Tables: products, orders, order_items, hero_slides, images, product_images, product_variants, variant_images
+          - Backup file: database-backup-${{ github.run_number }}.zip" \
+            backups/*.sql.gz \
+            --repo ${{ github.repository }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: backup-${{ github.run_number }}
-          release_name: Database Backup ${{ github.run_number }}
-          body: |
-            Automated database backup
-            - Date: ${{ github.run_number }}
-            - Tables: products, orders, order_items, hero_slides, images, product_images, product_variants, variant_images
-          draft: false
-          prerelease: false
