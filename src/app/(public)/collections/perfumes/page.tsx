@@ -3,7 +3,7 @@ import { ProductCard } from "@/components/common/product-card";
 import { SortSelect } from "@/components/common/sort-select";
 import { getProductsByCategory } from "@/lib/actions/product";
 
-export const dynamic = "force-dynamic"; // For current frequent addition of products
+export const revalidate = 21600; // Revalidate every 6 hours (21600 seconds)
 
 export const metadata: Metadata = {
   title: "Premium Perfumes",

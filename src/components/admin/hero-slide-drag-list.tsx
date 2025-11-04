@@ -100,6 +100,7 @@ function SortableItem({
                   src={slide.image.backblaze_url}
                   alt={slide.title || "Hero Slide Image"}
                   fill
+                  unoptimized
                   className="object-cover"
                 />
               ) : (

@@ -8,7 +8,7 @@ import { ProductPricingAndCart } from "@/components/feature/product-pricing-and-
 import { cn } from "@/lib/utils";
 import { StructuredData } from "@/components/seo/structured-data";
 
-export const dynamic = "force-dynamic"; // For current frequent addition of products
+export const revalidate = 21600; // Revalidate every 6 hours (21600 seconds)
 
 interface ProductDetailPageProps {
   params: Promise<{

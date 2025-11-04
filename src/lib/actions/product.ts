@@ -283,6 +283,7 @@ export async function createProduct(
 
     revalidatePath(`/collections/${productData.category}`);
     revalidatePath("/products/[id]", "page");
+    if (productData?.is_featured) revalidatePath("/");
     return { success: true, data, error: null };
   } catch (error) {
     console.error("Error in createProduct:", error);
@@ -313,6 +314,7 @@ export async function updateProduct(
 
     revalidatePath(`/collections/${productData.category}`);
     revalidatePath(`/products/${productData.slug}`, "page");
+    if (productData?.is_featured) revalidatePath("/");
     return { success: true, data };
   } catch (error) {
     console.error("Error in updateProduct:", error);
