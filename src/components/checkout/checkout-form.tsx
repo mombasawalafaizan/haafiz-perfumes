@@ -15,9 +15,7 @@ import { createRazorpayOrder } from "@/lib/actions/razorpay";
 import { useCart } from "@/hooks/useCart";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -101,12 +99,12 @@ export function CheckoutForm({ className }: CheckoutFormProps) {
       city: "",
       state: "",
       pincode: "",
-      payment_method: "cod",
+      payment_method: "online",
       notes: "",
     },
   });
 
-  const paymentMethod = form.watch("payment_method");
+  // const paymentMethod = form.watch("payment_method");
 
   const onSubmit = async (data: CheckoutFormData) => {
     if (cartItems.length === 0) {
@@ -377,7 +375,7 @@ export function CheckoutForm({ className }: CheckoutFormProps) {
           </Card>
 
           {/* Payment Method */}
-          <Card>
+          {/* <Card>
             <CardHeader className="px-4 pt-2">
               <CardTitle>Payment Method</CardTitle>
             </CardHeader>
@@ -432,7 +430,7 @@ export function CheckoutForm({ className }: CheckoutFormProps) {
                 )}
               />
             </CardContent>
-          </Card>
+          </Card> */}
 
           {/* Order Notes */}
           <Card>
@@ -468,13 +466,15 @@ export function CheckoutForm({ className }: CheckoutFormProps) {
           >
             {isLoading ? (
               <>
-                {paymentMethod === "online"
+                Processing Payment...
+                {/* {paymentMethod === "online"
                   ? "Processing Payment..."
-                  : "Placing Order..."}
+                  : "Placing Order..."} */}
               </>
             ) : (
               <>
-                {paymentMethod === "online" ? "Pay Now" : "Place Order (COD)"}
+                Pay Now
+                {/* {paymentMethod === "online" ? "Pay Now" : "Place Order (COD)"} */}
               </>
             )}
           </Button>

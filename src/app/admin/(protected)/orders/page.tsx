@@ -22,10 +22,10 @@ const PaymentStatusOptions = [
   { label: "Refunded", value: "refunded" },
 ];
 
-const PaymentMethodOptions = [
-  { label: "COD", value: "cod" },
-  { label: "Online Payment", value: "online" },
-];
+// const PaymentMethodOptions = [
+//   { label: "COD", value: "cod" },
+//   { label: "Online Payment", value: "online" },
+// ];
 
 const filters: IFilterConfig[] = [
   {
@@ -38,16 +38,16 @@ const filters: IFilterConfig[] = [
     width: "w-90",
     showOutside: true,
   },
-  {
-    id: "payment_method",
-    label: "Payment Method",
-    type: "select",
-    field: "payment_method",
-    placeholder: "All Payment Methods",
-    options: PaymentMethodOptions,
-    width: "w-90",
-    showOutside: true,
-  },
+  // {
+  //   id: "payment_method",
+  //   label: "Payment Method",
+  //   type: "select",
+  //   field: "payment_method",
+  //   placeholder: "All Payment Methods",
+  //   options: PaymentMethodOptions,
+  //   width: "w-90",
+  //   showOutside: true,
+  // },
   {
     id: "created_at",
     label: "Created Between",

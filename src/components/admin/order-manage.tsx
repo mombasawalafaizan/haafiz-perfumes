@@ -132,38 +132,46 @@ export function OrderManage({ isOpen, onClose, order }: OrderManageProps) {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         aria-describedby={undefined}
-        className="max-w-6xl max-h-[95vh] min-w-3xl"
+        className="max-w-6xl max-h-[95vh] w-[95vw] md:min-w-2xl lg:min-w-3xl"
       >
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Package className="h-5 w-5" />
-            Order Details - {order.order_number}
+          <DialogTitle className="flex items-center gap-2 text-base">
+            <Package className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+            <span className="flex flex-wrap mr-3">
+              Order Details - <span>{order.order_number}</span>
+            </span>
           </DialogTitle>
         </DialogHeader>
 
         <DialogBody>
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Order Summary */}
             <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Order Summary</CardTitle>
+              <CardHeader className="pb-3 sm:pb-4">
+                <CardTitle className="text-base sm:text-lg">
+                  Order Summary
+                </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <CardContent className="space-y-3 sm:space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">
+                    <Label className="text-xs sm:text-sm font-medium text-muted-foreground">
                       Order Number
                     </Label>
-                    <p className="font-mono text-sm">{order.order_number}</p>
+                    <p className="font-mono text-xs sm:text-sm break-all mt-1">
+                      {order.order_number}
+                    </p>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">
+                    <Label className="text-xs sm:text-sm font-medium text-muted-foreground">
                       Order Date
                     </Label>
-                    <p>{formatDate.long(order.created_at)}</p>
+                    <p className="text-xs sm:text-sm mt-1">
+                      {formatDate.long(order.created_at)}
+                    </p>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">
+                    <Label className="text-xs sm:text-sm font-medium text-muted-foreground">
                       Order Status
                     </Label>
                     <div className="mt-1">
@@ -171,7 +179,7 @@ export function OrderManage({ isOpen, onClose, order }: OrderManageProps) {
                     </div>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">
+                    <Label className="text-xs sm:text-sm font-medium text-muted-foreground">
                       Payment Status
                     </Label>
                     <div className="mt-1">
@@ -179,50 +187,58 @@ export function OrderManage({ isOpen, onClose, order }: OrderManageProps) {
                     </div>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">
+                    <Label className="text-xs sm:text-sm font-medium text-muted-foreground">
                       Payment Method
                     </Label>
-                    <p className="capitalize">{order.payment_method}</p>
+                    <p className="capitalize text-xs sm:text-sm mt-1">
+                      {order.payment_method}
+                    </p>
                   </div>
                   {order.razorpay_order_id && (
-                    <div>
-                      <Label className="text-sm font-medium text-muted-foreground">
+                    <div className="sm:col-span-2">
+                      <Label className="text-xs sm:text-sm font-medium text-muted-foreground">
                         Razorpay Order ID
                       </Label>
-                      <p>{order.razorpay_order_id}</p>
+                      <p className="text-xs sm:text-sm break-all mt-1">
+                        {order.razorpay_order_id}
+                      </p>
                     </div>
                   )}
                   {order.razorpay_payment_id && (
-                    <div>
-                      <Label className="text-sm font-medium text-muted-foreground">
+                    <div className="sm:col-span-2">
+                      <Label className="text-xs sm:text-sm font-medium text-muted-foreground">
                         Razorpay Payment ID
                       </Label>
-                      <p>{order.razorpay_payment_id}</p>
+                      <p className="text-xs sm:text-sm break-all mt-1">
+                        {order.razorpay_payment_id}
+                      </p>
                     </div>
                   )}
                   {order.notes && (
-                    <div>
-                      <Label className="text-sm font-medium text-muted-foreground">
+                    <div className="sm:col-span-2">
+                      <Label className="text-xs sm:text-sm font-medium text-muted-foreground">
                         Customer Notes
                       </Label>
-                      <p className="capitalize">{order.notes}</p>
+                      <p className="capitalize text-xs sm:text-sm mt-1 break-words">
+                        {order.notes}
+                      </p>
                     </div>
                   )}
                   {order.tracking_number && (
-                    <div>
-                      <Label className="text-sm font-medium text-muted-foreground">
+                    <div className="sm:col-span-2">
+                      <Label className="text-xs sm:text-sm font-medium text-muted-foreground">
                         Tracking Number
                       </Label>
-                      <p className="font-mono text-sm">
+                      <p className="font-mono text-xs sm:text-sm break-all mt-1">
                         {order.tracking_number}
                       </p>
                     </div>
                   )}
-                  <div>
-                    <Label className="text-sm font-medium text-muted-foreground">
+                  <div className="sm:col-span-2">
+                    <Label className="text-xs sm:text-sm font-medium text-muted-foreground">
                       Total Amount
                     </Label>
-                    <p className="text-lg font-semibold">
+                    <p className="text-base sm:text-lg font-semibold mt-1">
                       ₹{order.total_amount.toLocaleString()}
                     </p>
                   </div>
@@ -232,45 +248,47 @@ export function OrderManage({ isOpen, onClose, order }: OrderManageProps) {
 
             {/* Customer Information */}
             <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <User className="h-4 w-4" />
+              <CardHeader className="pb-3 sm:pb-4">
+                <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+                  <User className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                   Customer Information
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">
+                    <Label className="text-xs sm:text-sm font-medium text-muted-foreground">
                       Name
                     </Label>
-                    <p>{order.customer_name}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-muted-foreground">
-                      Phone
-                    </Label>
-                    <p className="flex items-center gap-1">
-                      <Phone className="h-3 w-3" />
-                      {order.customer_phone}
+                    <p className="text-xs sm:text-sm mt-1 break-words">
+                      {order.customer_name}
                     </p>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">
+                    <Label className="text-xs sm:text-sm font-medium text-muted-foreground">
+                      Phone
+                    </Label>
+                    <p className="flex items-center gap-1 text-xs sm:text-sm mt-1">
+                      <Phone className="h-3 w-3 flex-shrink-0" />
+                      <span className="break-all">{order.customer_phone}</span>
+                    </p>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <Label className="text-xs sm:text-sm font-medium text-muted-foreground">
                       Email
                     </Label>
-                    <p className="flex items-center gap-1">
-                      <Mail className="h-3 w-3" />
+                    <p className="flex items-center gap-1 text-xs sm:text-sm mt-1 break-all">
+                      <Mail className="h-3 w-3 flex-shrink-0" />
                       {order.customer_email}
                     </p>
                   </div>
-                  <div>
-                    <Label className="text-sm font-medium text-muted-foreground">
+                  <div className="sm:col-span-2">
+                    <Label className="text-xs sm:text-sm font-medium text-muted-foreground">
                       Address
                     </Label>
-                    <p className="flex items-start gap-1">
+                    <p className="flex items-start gap-1 text-xs sm:text-sm mt-1">
                       <MapPin className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                      <span>
+                      <span className="break-words">
                         {order.customer_address}, {order.customer_city || ""},{" "}
                         {order.customer_state || ""} -{" "}
                         {order.customer_pincode || ""}
@@ -283,20 +301,20 @@ export function OrderManage({ isOpen, onClose, order }: OrderManageProps) {
 
             {/* Order Items */}
             <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Package className="h-4 w-4" />
+              <CardHeader className="pb-3 sm:pb-4">
+                <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+                  <Package className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                   Order Items ({order.order_items?.length || 0})
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {order.order_items?.map((item) => (
                     <div
                       key={item.id}
-                      className="flex items-start gap-4 p-4 border rounded-lg"
+                      className="flex items-start gap-2 sm:gap-4 p-3 sm:p-4 border rounded-lg"
                     >
-                      <div className="w-16 h-16 bg-muted rounded-md flex-shrink-0 overflow-hidden">
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 bg-muted rounded-md flex-shrink-0 overflow-hidden">
                         {item.product_snapshot?.image_url ? (
                           <Image
                             src={item.product_snapshot.image_url}
@@ -307,23 +325,23 @@ export function OrderManage({ isOpen, onClose, order }: OrderManageProps) {
                           />
                         ) : (
                           <div className="w-full h-full bg-muted flex items-center justify-center">
-                            <Package className="h-6 w-6 text-muted-foreground" />
+                            <Package className="h-4 w-4 sm:h-6 sm:w-6 text-muted-foreground" />
                           </div>
                         )}
                       </div>
                       <div className="flex-1 min-w-0 flex flex-col gap-1">
-                        <h4 className="font-medium text-sm">
+                        <h4 className="font-medium text-xs sm:text-sm break-words">
                           {item.product_name}
                         </h4>
                         <p className="text-xs text-muted-foreground">
                           {item.product_quality} - {item.product_volume}ml
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-muted-foreground break-all">
                           SKU: {item.product_sku}
                         </p>
-                        <div className="flex items-center justify-between mt-2">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2 mt-2">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-xs sm:text-sm font-medium">
                               ₹{item.unit_price.toFixed(2)}
                             </span>
                             {item.unit_mrp > item.unit_price && (
@@ -331,12 +349,15 @@ export function OrderManage({ isOpen, onClose, order }: OrderManageProps) {
                                 ₹{item.unit_mrp.toFixed(2)}
                               </span>
                             )}
+                            <span className="text-xs text-muted-foreground sm:hidden">
+                              • Qty: {item.quantity}
+                            </span>
                           </div>
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
                             Qty: {item.quantity}
                           </div>
                         </div>
-                        <div className="text-sm font-semibold mt-1">
+                        <div className="text-xs sm:text-sm font-semibold mt-1">
                           Total: ₹{item.total_price.toFixed(2)}
                         </div>
                       </div>
@@ -348,31 +369,33 @@ export function OrderManage({ isOpen, onClose, order }: OrderManageProps) {
 
             {/* Order Breakdown */}
             <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Order Breakdown</CardTitle>
+              <CardHeader className="pb-3 sm:pb-4">
+                <CardTitle className="text-base sm:text-lg">
+                  Order Breakdown
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <div className="flex justify-between">
+                  <div className="flex justify-between text-xs sm:text-sm">
                     <span>Subtotal</span>
                     <span>₹{order.subtotal.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between text-xs sm:text-sm">
                     <span>Shipping</span>
                     <span>₹{order.shipping_amount.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between text-xs sm:text-sm">
                     <span>Tax</span>
                     <span>₹{order.tax_amount.toFixed(2)}</span>
                   </div>
                   {order.discount_amount > 0 && (
-                    <div className="flex justify-between text-green-600">
+                    <div className="flex justify-between text-green-600 text-xs sm:text-sm">
                       <span>Discount</span>
                       <span>-₹{order.discount_amount.toFixed(2)}</span>
                     </div>
                   )}
                   <Separator />
-                  <div className="flex justify-between text-lg font-semibold">
+                  <div className="flex justify-between text-base sm:text-lg font-semibold">
                     <span>Total</span>
                     <span>₹{order.total_amount.toFixed(2)}</span>
                   </div>
@@ -382,23 +405,28 @@ export function OrderManage({ isOpen, onClose, order }: OrderManageProps) {
 
             {/* Status Update */}
             <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Truck className="h-4 w-4" />
+              <CardHeader className="pb-3 sm:pb-4">
+                <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+                  <Truck className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                   Update Order Status
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <CardContent className="space-y-4 sm:space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div className="flex flex-col gap-1">
-                    <Label htmlFor="order-status">Order Status</Label>
+                    <Label
+                      htmlFor="order-status"
+                      className="text-xs sm:text-sm"
+                    >
+                      Order Status
+                    </Label>
                     <Select
                       value={newStatus}
                       onValueChange={(value: TOrderStatus) =>
                         setNewStatus(value)
                       }
                     >
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className="w-full text-xs sm:text-sm h-9 sm:h-10">
                         <SelectValue placeholder="Select status" />
                       </SelectTrigger>
                       <SelectContent>
@@ -411,14 +439,19 @@ export function OrderManage({ isOpen, onClose, order }: OrderManageProps) {
                     </Select>
                   </div>
                   <div className="flex flex-col gap-1">
-                    <Label htmlFor="payment-status">Payment Status</Label>
+                    <Label
+                      htmlFor="payment-status"
+                      className="text-xs sm:text-sm"
+                    >
+                      Payment Status
+                    </Label>
                     <Select
                       value={newPaymentStatus}
                       onValueChange={(value: TPaymentStatus) =>
                         setNewPaymentStatus(value)
                       }
                     >
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className="w-full text-xs sm:text-sm h-9 sm:h-10">
                         <SelectValue placeholder="Select payment status" />
                       </SelectTrigger>
                       <SelectContent>
@@ -435,7 +468,10 @@ export function OrderManage({ isOpen, onClose, order }: OrderManageProps) {
                   newStatus === "shipped" ||
                   newStatus === "delivered") && (
                   <div className="flex flex-col gap-1">
-                    <Label htmlFor="tracking-number">
+                    <Label
+                      htmlFor="tracking-number"
+                      className="text-xs sm:text-sm"
+                    >
                       Tracking Number
                       <span className="text-error">*</span>
                     </Label>
@@ -444,7 +480,7 @@ export function OrderManage({ isOpen, onClose, order }: OrderManageProps) {
                       placeholder="Enter tracking number..."
                       value={trackingNumber}
                       onChange={(e) => setTrackingNumber(e.target.value)}
-                      className="mt-1"
+                      className="mt-1 text-xs sm:text-sm h-9 sm:h-10"
                     />
                     <p className="text-xs text-muted-foreground">
                       Required for {newStatus} orders
@@ -452,13 +488,15 @@ export function OrderManage({ isOpen, onClose, order }: OrderManageProps) {
                   </div>
                 )}
                 <div className="flex flex-col gap-1">
-                  <Label htmlFor="admin-notes">Admin Notes</Label>
+                  <Label htmlFor="admin-notes" className="text-xs sm:text-sm">
+                    Admin Notes
+                  </Label>
                   <Textarea
                     id="admin-notes"
                     placeholder="Add notes about this order..."
                     value={adminNotes}
                     onChange={(e) => setAdminNotes(e.target.value)}
-                    className="mt-1"
+                    className="mt-1 text-xs sm:text-sm min-h-[80px] sm:min-h-[100px]"
                   />
                 </div>
               </CardContent>
@@ -466,15 +504,19 @@ export function OrderManage({ isOpen, onClose, order }: OrderManageProps) {
           </div>
         </DialogBody>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+        <DialogFooter className="flex flex-row gap-2 items-center justify-center md:justify-end">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            className="w-fit min-w-36"
+          >
             Close
           </Button>
           {order && (
             <Button
               onClick={handleUpdateStatus}
               disabled={updating}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 w-fit min-w-36"
             >
               {updating ? "Updating..." : "Update Status"}
             </Button>
