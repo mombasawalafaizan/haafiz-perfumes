@@ -7,13 +7,15 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, Package, Truck } from "lucide-react";
 import Link from "next/link";
-import {
-  calculateShipping,
-  calculateTotalWithShipping,
-  getShippingTierDescription,
-} from "@/lib/utils";
+import { calculateShipping, calculateTotalWithShipping } from "@/lib/utils";
 
-export function CheckoutSummary() {
+interface CheckoutSummaryProps {
+  paymentMethod?: "cod" | "online";
+}
+
+export function CheckoutSummary({
+  paymentMethod = "online",
+}: CheckoutSummaryProps) {
   const { items: cartItems } = useCart();
 
   const calculateSubtotal = () => {
@@ -21,12 +23,11 @@ export function CheckoutSummary() {
   };
 
   const calculateShippingInfo = () => {
-    const subtotal = calculateSubtotal();
     const totalQuantity = cartItems.reduce(
       (sum, item) => sum + item.quantity,
       0
     );
-    return calculateShipping(subtotal, totalQuantity);
+    return calculateShipping(totalQuantity, paymentMethod);
   };
 
   const calculateTotal = () => {
@@ -121,36 +122,25 @@ export function CheckoutSummary() {
             </div>
             {(() => {
               const shippingInfo = calculateShippingInfo();
-              const totalQuantity = cartItems.reduce(
-                (sum, item) => sum + item.quantity,
-                0
-              );
+              // const totalQuantity = cartItems.reduce(
+              //   (sum, item) => sum + item.quantity,
+              //   0
+              // );
 
               return (
                 <div className="flex justify-between text-sm">
                   <div className="flex items-center gap-1">
                     <Truck className="h-3 w-3" />
                     <span>Shipping</span>
-                    {!shippingInfo.is_free_shipping && (
-                      <span className="text-xs text-muted-foreground">
-                        ({getShippingTierDescription(totalQuantity)})
-                      </span>
-                    )}
+                    {/* <span className="text-xs text-muted-foreground">
+                      ({getShippingTierDescription(totalQuantity)})
+                    </span> */}
                   </div>
-                  <span
-                    className={
-                      shippingInfo.is_free_shipping
-                        ? "text-success font-medium"
-                        : ""
-                    }
-                  >
-                    {shippingInfo.is_free_shipping
-                      ? "Free"
-                      : `₹${shippingInfo.shipping_amount}`}
-                  </span>
+                  <span>₹{shippingInfo.shipping_amount}</span>
                 </div>
               );
             })()}
+            {/* Free shipping above ₹2000 is disabled for now
             {(() => {
               const shippingInfo = calculateShippingInfo();
               if (!shippingInfo.is_free_shipping) {
@@ -165,6 +155,7 @@ export function CheckoutSummary() {
               }
               return null;
             })()}
+            */}
             {/* <div className="flex justify-between text-sm text-muted-foreground">
               <span>Tax</span>
               <span>₹0.00</span>

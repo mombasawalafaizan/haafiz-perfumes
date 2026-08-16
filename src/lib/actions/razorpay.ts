@@ -5,6 +5,7 @@ import { Orders } from "razorpay/dist/types/orders";
 import { Payments } from "razorpay/dist/types/payments";
 import crypto from "crypto";
 import { supabase } from "@/lib/supabase";
+import { initiateShipment } from "@/lib/actions/shipping";
 
 // Initialize Razorpay
 const razorpay = new Razorpay({
@@ -66,6 +67,8 @@ export async function verifyPaymentSignature(
       if (error) {
         throw new Error(`Failed to update order: ${error.message}`);
       }
+
+      await initiateShipment(databaseOrderId);
 
       return { success: true };
     } else {
