@@ -17,7 +17,7 @@ import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { calculateCartMeta } from "@/lib/utils";
 import {
   calculateShipping,
-  getShippingTierDescription,
+  // getShippingTierDescription,
   calculateTotalWithShipping as calculateTotalWithShippingUtil,
 } from "@/lib/utils";
 
@@ -64,7 +64,8 @@ export function CartSidebar() {
 
   const calculateShippingInfo = () => {
     const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
-    return calculateShipping(totalPrice, totalQuantity);
+    // Estimate is always shown at the prepaid rate here — payment method isn't chosen yet.
+    return calculateShipping(totalQuantity, "online");
   };
 
   const calculateTotals = (options: { withShipping?: boolean }) => {
@@ -229,10 +230,10 @@ export function CartSidebar() {
                 {/* Shipping Preview */}
                 {(() => {
                   const shippingInfo = calculateShippingInfo();
-                  const totalQuantity = items.reduce(
-                    (sum, item) => sum + item.quantity,
-                    0
-                  );
+                  // const totalQuantity = items.reduce(
+                  //   (sum, item) => sum + item.quantity,
+                  //   0
+                  // );
 
                   return (
                     <div className="space-y-2">
@@ -251,24 +252,13 @@ export function CartSidebar() {
                         <div className="flex items-center gap-1">
                           <Truck className="h-3 w-3" />
                           <span>Shipping</span>
-                          {!shippingInfo.is_free_shipping && (
-                            <span className="text-xs text-muted-foreground">
-                              ({getShippingTierDescription(totalQuantity)})
-                            </span>
-                          )}
+                          {/* <span className="text-xs text-muted-foreground">
+                            ({getShippingTierDescription(totalQuantity)})
+                          </span> */}
                         </div>
-                        <span
-                          className={
-                            shippingInfo.is_free_shipping
-                              ? "text-success font-medium"
-                              : ""
-                          }
-                        >
-                          {shippingInfo.is_free_shipping
-                            ? "Free"
-                            : `₹${shippingInfo.shipping_amount}`}
-                        </span>
+                        <span>₹{shippingInfo.shipping_amount}</span>
                       </div>
+                      {/* Free shipping above ₹2000 is disabled for now
                       {!shippingInfo.is_free_shipping && (
                         <div className="text-xs text-muted-foreground font-medium text-center">
                           Add items worth ₹
@@ -279,6 +269,11 @@ export function CartSidebar() {
                           more to avail free shipping
                         </div>
                       )}
+                      */}
+                      <p className="text-xs text-muted-foreground text-center">
+                        Shipping is calculated approx. for prepaid orders and
+                        may vary at checkout based on payment mode.
+                      </p>
                     </div>
                   );
                 })()}

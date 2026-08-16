@@ -32,7 +32,7 @@ interface CartActions {
   setCartOpen: (open: boolean) => void;
 }
 
-export const MAX_CART_ITEMS = 10;
+export const MAX_CART_ITEMS = 5;
 
 const useCartStore = create<CartState & CartActions>()(
   persist(
@@ -139,7 +139,7 @@ const useCartStore = create<CartState & CartActions>()(
         if (result.success) {
           if (result.discarded > 0) {
             toast.warning("Cart limit reached! ⚠️", {
-              description: `${result.added} × ${product.name} added to cart. ${result.discarded} items discarded (max 10 items allowed).`,
+              description: `${result.added} × ${product.name} added to cart. ${result.discarded} items discarded (max ${MAX_CART_ITEMS} items allowed).`,
             });
           } else {
             toast.success(`${product.name} has been added to your cart.`, {
@@ -148,8 +148,7 @@ const useCartStore = create<CartState & CartActions>()(
           }
         } else {
           toast.error("Cart is full! 🛒", {
-            description:
-              "Your cart has reached the maximum limit of 10 items. Please remove some items to add more.",
+            description: `Your cart has reached the maximum limit of ${MAX_CART_ITEMS} items. Please remove some items to add more.`,
           });
         }
         return result;

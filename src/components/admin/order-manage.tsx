@@ -25,7 +25,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { IOrderDetail, TOrderStatus, TPaymentStatus } from "@/types/order";
 import { updateOrderStatus } from "@/lib/actions/order";
-import { formatDate } from "@/lib/calendar";
+import {
+  getShipmentDetails,
+  getShipmentTracking,
+  ShipmentDetails,
+  ShipmentTracking,
+} from "@/lib/actions/shipping";
+import { formatDate, formatDateTime } from "@/lib/calendar";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Package, User, MapPin, Phone, Mail, Truck } from "lucide-react";
 import Image from "next/image";
@@ -60,6 +67,12 @@ export function OrderManage({ isOpen, onClose, order }: OrderManageProps) {
     useState<TPaymentStatus>("pending");
   const [adminNotes, setAdminNotes] = useState("");
   const [trackingNumber, setTrackingNumber] = useState("");
+  const [shipmentDetails, setShipmentDetails] =
+    useState<ShipmentDetails | null>(null);
+  const [shipmentTracking, setShipmentTracking] =
+    useState<ShipmentTracking | null>(null);
+  const [loadingShipment, setLoadingShipment] = useState(false);
+  const [shipmentError, setShipmentError] = useState<string | null>(null);
 
   useEffect(() => {
     if (order) {
@@ -69,6 +82,46 @@ export function OrderManage({ isOpen, onClose, order }: OrderManageProps) {
       setTrackingNumber(order.tracking_number || "");
     }
   }, [order]);
+
+  useEffect(() => {
+    if (!order || !isOpen) return;
+
+    let cancelled = false;
+    setShipmentDetails(null);
+    setShipmentTracking(null);
+    setShipmentError(null);
+    setLoadingShipment(true);
+
+    (async () => {
+      const detailsResult = await getShipmentDetails(order.order_number);
+      if (cancelled) return;
+
+      if (!detailsResult?.success || !detailsResult?.data) {
+        setShipmentError(
+          detailsResult.error || "Failed to fetch shipment details"
+        );
+        setLoadingShipment(false);
+        return;
+      }
+
+      setShipmentDetails(detailsResult.data);
+
+      if (detailsResult.data?.awb_number) {
+        const trackingResult = await getShipmentTracking(
+          detailsResult.data.awb_number
+        );
+        if (!cancelled && trackingResult.success && trackingResult.data) {
+          setShipmentTracking(trackingResult.data);
+        }
+      }
+
+      if (!cancelled) setLoadingShipment(false);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [order, isOpen]);
 
   const handleUpdateStatus = async () => {
     if (!order) return;
@@ -138,7 +191,7 @@ export function OrderManage({ isOpen, onClose, order }: OrderManageProps) {
           <DialogTitle className="flex items-center gap-2 text-base">
             <Package className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
             <span className="flex flex-wrap mr-3">
-              Order Details - <span>{order.order_number}</span>
+              Order Details -&nbsp; <span>{order.order_number}</span>
             </span>
           </DialogTitle>
         </DialogHeader>
@@ -400,6 +453,115 @@ export function OrderManage({ isOpen, onClose, order }: OrderManageProps) {
                     <span>₹{order.total_amount.toFixed(2)}</span>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Order Details from ShippingXpress */}
+            <Card>
+              <CardHeader className="pb-3 sm:pb-4">
+                <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+                  <Truck className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                  Order Details from ShippingXpress
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {loadingShipment && (
+                  <p className="text-xs sm:text-sm text-muted-foreground">
+                    Fetching shipment info...
+                  </p>
+                )}
+                {!loadingShipment && shipmentError && (
+                  <p className="text-xs sm:text-sm text-destructive capitalize font-bold">
+                    {shipmentError}
+                  </p>
+                )}
+                {!loadingShipment && shipmentDetails && (
+                  <>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                      <div>
+                        <Label className="text-xs sm:text-sm font-medium text-muted-foreground">
+                          AWB Number
+                        </Label>
+                        <p className="font-mono text-xs sm:text-sm mt-1 break-all">
+                          {shipmentDetails.awb_number || "-"}
+                        </p>
+                      </div>
+                      <div>
+                        <Label className="text-xs sm:text-sm font-medium text-muted-foreground">
+                          Shipment Status
+                        </Label>
+                        <p className="text-xs sm:text-sm mt-1 capitalize">
+                          {shipmentDetails.shipment_status || "-"}
+                        </p>
+                      </div>
+                      <div>
+                        <Label className="text-xs sm:text-sm font-medium text-muted-foreground">
+                          Courier
+                        </Label>
+                        <p className="text-xs sm:text-sm mt-1">
+                          {shipmentDetails.courier_name || "-"}
+                        </p>
+                      </div>
+                      <div>
+                        <Label className="text-xs sm:text-sm font-medium text-muted-foreground">
+                          Order Date
+                        </Label>
+                        <p className="text-xs sm:text-sm mt-1">
+                          {shipmentDetails.order_date || "-"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {shipmentTracking &&
+                      shipmentTracking.history?.length > 0 && (
+                        <div className="pt-2">
+                          <Label className="text-xs sm:text-sm font-medium text-muted-foreground mb-3 block">
+                            Tracking Timeline
+                          </Label>
+                          <ol className="relative border-l-2 border-border ml-2 space-y-4">
+                            {shipmentTracking.history.map((event, idx) => (
+                              <li key={idx} className="ml-4 relative">
+                                <span
+                                  className={cn(
+                                    "absolute -left-[22px] -top-[5px] h-2.5 w-2.5 rounded-full mt-1 z-10",
+                                    idx === 0
+                                      ? "bg-primary"
+                                      : "bg-muted-foreground"
+                                  )}
+                                />
+                                <p className="text-xs sm:text-sm font-medium">
+                                  {event.status_code}
+                                </p>
+                                <p className="text-xs text-muted-foreground break-words">
+                                  {event.location}
+                                </p>
+                                {event.message && (
+                                  <p className="text-xs text-muted-foreground italic break-words">
+                                    {event.message}
+                                  </p>
+                                )}
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                  {formatDateTime.compact(
+                                    event.event_time.replace(" ", "T")
+                                  )}
+                                </p>
+                              </li>
+                            ))}
+                            <li className="ml-4 relative pt-1.5">
+                              <span
+                                className={cn(
+                                  "absolute -left-[22px] top-[12px] h-2.5 w-2.5 rounded-full mt-1 z-10 bg-muted-foreground"
+                                )}
+                              />
+                              <p className="text-xs sm:text-sm font-medium">
+                                Customer Checkout
+                              </p>
+                            </li>
+                          </ol>
+                        </div>
+                      )}
+                  </>
+                )}
               </CardContent>
             </Card>
 

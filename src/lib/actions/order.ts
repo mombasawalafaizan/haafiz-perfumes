@@ -16,7 +16,12 @@ import {
   IPaginationParams,
   ISupabaseQueryConfig,
 } from "@/types/query";
-import { calculateShipping, calculateTotalWithShipping } from "@/lib/utils";
+import {
+  calculateShipping,
+  calculateTotalWithShipping,
+  getShippingTierForQuantity,
+} from "@/lib/utils";
+import { MAX_CART_ITEMS } from "@/hooks/useCart";
 
 // Generate unique order number
 function generateOrderNumber(): string {
@@ -42,9 +47,18 @@ export async function createOrder(
       0
     );
 
+    if (totalQuantity > MAX_CART_ITEMS) {
+      throw new Error(`Maximum ${MAX_CART_ITEMS} items allowed per order`);
+    }
+
     // Calculate shipping
-    const shippingCalculation = calculateShipping(subtotal, totalQuantity);
+    const shippingCalculation = calculateShipping(
+      totalQuantity,
+      orderData.payment_method
+    );
     const shipping_amount = shippingCalculation.shipping_amount;
+    const tier = getShippingTierForQuantity(totalQuantity);
+    const admin_notes = `Shipping package: ${tier.weightGrams}g, ${tier.length}x${tier.width}x${tier.height}cm (LxWxH)`;
 
     const tax_amount = 0; // No tax for now
     const discount_amount = 0; // No discount for now
@@ -80,6 +94,7 @@ export async function createOrder(
           orderData.payment_method === "cod" ? "pending" : "pending",
         status: "pending",
         notes: orderData.notes,
+        admin_notes,
       })
       .select()
       .single();

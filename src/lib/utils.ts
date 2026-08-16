@@ -66,40 +66,46 @@ export function calculateCartMeta(items: CartItem[]) {
 
 // Shipping calculation utilities
 
+export interface ShippingTier {
+  quantity: number;
+  weightGrams: number;
+  length: number; // cm
+  width: number; // cm
+  height: number; // cm
+  ratePrepaid: number;
+  rateCod: number;
+}
+
+// Weight/dimensions/rate per total cart quantity, as provided by the courier (ShippingXpress)
+export const SHIPPING_TIERS: ShippingTier[] = [
+  { quantity: 1, weightGrams: 300, length: 16, width: 9, height: 8, ratePrepaid: 70, rateCod: 120 },
+  { quantity: 2, weightGrams: 650, length: 16, width: 20, height: 8, ratePrepaid: 100, rateCod: 150 },
+  { quantity: 3, weightGrams: 1000, length: 16, width: 29, height: 8, ratePrepaid: 120, rateCod: 170 },
+  { quantity: 4, weightGrams: 1300, length: 16, width: 20, height: 18, ratePrepaid: 150, rateCod: 200 },
+  { quantity: 5, weightGrams: 1600, length: 16, width: 20, height: 27, ratePrepaid: 200, rateCod: 250 },
+];
+
+export function getShippingTierForQuantity(quantity: number): ShippingTier {
+  const idx = Math.min(Math.max(quantity, 1), SHIPPING_TIERS.length) - 1;
+  return SHIPPING_TIERS[idx];
+}
+
 export interface ShippingCalculation {
   shipping_amount: number;
-  is_free_shipping: boolean;
-  free_shipping_threshold: number;
-  total_before_shipping: number;
+  tier: ShippingTier;
 }
 
 export function calculateShipping(
-  totalAmount: number,
-  totalQuantity: number
+  totalQuantity: number,
+  paymentMethod: "cod" | "online"
 ): ShippingCalculation {
-  const freeShippingThreshold = 2000;
-  const isFreeShipping = totalAmount >= freeShippingThreshold;
+  const tier = getShippingTierForQuantity(totalQuantity);
+  // Free shipping above ₹2000 is disabled for now — ShippingXpress tier rates always apply.
+  // const freeShippingThreshold = 2000;
+  const shipping_amount =
+    paymentMethod === "cod" ? tier.rateCod : tier.ratePrepaid;
 
-  let shippingAmount = 0;
-
-  if (!isFreeShipping) {
-    if (totalQuantity <= 2) {
-      shippingAmount = 60;
-    } else if (totalQuantity === 3) {
-      shippingAmount = 80;
-    } else if (totalQuantity <= 5) {
-      shippingAmount = 120;
-    } else {
-      shippingAmount = 150;
-    }
-  }
-
-  return {
-    shipping_amount: shippingAmount,
-    is_free_shipping: isFreeShipping,
-    free_shipping_threshold: freeShippingThreshold,
-    total_before_shipping: totalAmount,
-  };
+  return { shipping_amount, tier };
 }
 
 export function calculateTotalWithShipping(
@@ -112,15 +118,12 @@ export function calculateTotalWithShipping(
 }
 
 export function getShippingTierDescription(quantity: number): string {
-  if (quantity <= 2) {
-    return "Standard (1-2 items)";
-  } else if (quantity === 3) {
-    return "Medium (3 items)";
-  } else if (quantity <= 5) {
-    return "Large (4-5 items)";
-  } else {
-    return "Extra Large (6+ items)";
-  }
+  const tier = getShippingTierForQuantity(quantity);
+  const weight =
+    tier.weightGrams >= 1000
+      ? `${(tier.weightGrams / 1000).toFixed(1)}kg`
+      : `${tier.weightGrams}g`;
+  return `${quantity} item${quantity > 1 ? "s" : ""} · ${weight} package`;
 }
 
 // Utility function to create a product with selected pricing

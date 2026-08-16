@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -10,12 +10,15 @@ import {
   CheckoutFormData,
 } from "@/lib/validations/checkout";
 import { createOrder } from "@/lib/actions/order";
+import { initiateShipment } from "@/lib/actions/shipping";
 import { initializeRazorpayCheckout } from "@/lib/razorpay";
 import { createRazorpayOrder } from "@/lib/actions/razorpay";
 import { useCart } from "@/hooks/useCart";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -37,6 +40,7 @@ import { OrderSuccessModal } from "@/components/feature/order-success-modal";
 
 interface CheckoutFormProps {
   className?: string;
+  onPaymentMethodChange?: (method: "cod" | "online") => void;
 }
 
 // List of Indian States and Union Territories
@@ -79,7 +83,10 @@ const INDIAN_STATES = [
   "Puducherry",
 ];
 
-export function CheckoutForm({ className }: CheckoutFormProps) {
+export function CheckoutForm({
+  className,
+  onPaymentMethodChange,
+}: CheckoutFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [orderData, setOrderData] = useState<{
@@ -104,7 +111,11 @@ export function CheckoutForm({ className }: CheckoutFormProps) {
     },
   });
 
-  // const paymentMethod = form.watch("payment_method");
+  const paymentMethod = form.watch("payment_method");
+
+  useEffect(() => {
+    onPaymentMethodChange?.(paymentMethod);
+  }, [paymentMethod, onPaymentMethodChange]);
 
   const onSubmit = async (data: CheckoutFormData) => {
     if (cartItems.length === 0) {
@@ -180,6 +191,7 @@ export function CheckoutForm({ className }: CheckoutFormProps) {
         }
       } else {
         // COD order
+        initiateShipment(orderResult.data!.id);
         toast.success("Order placed successfully!");
         clearCart();
         setOrderData({ orderId: orderResult.data!.order_number });
@@ -375,7 +387,7 @@ export function CheckoutForm({ className }: CheckoutFormProps) {
           </Card>
 
           {/* Payment Method */}
-          {/* <Card>
+          <Card>
             <CardHeader className="px-4 pt-2">
               <CardTitle>Payment Method</CardTitle>
             </CardHeader>
@@ -389,7 +401,7 @@ export function CheckoutForm({ className }: CheckoutFormProps) {
                       <RadioGroup
                         onValueChange={field.onChange}
                         defaultValue={field.value}
-                        className="flex flex-wrap gap-4"
+                        className="flex flex-col gap-4 md:flex-row md:gap-8"
                       >
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem
@@ -430,7 +442,7 @@ export function CheckoutForm({ className }: CheckoutFormProps) {
                 )}
               />
             </CardContent>
-          </Card> */}
+          </Card>
 
           {/* Order Notes */}
           <Card>
@@ -466,15 +478,13 @@ export function CheckoutForm({ className }: CheckoutFormProps) {
           >
             {isLoading ? (
               <>
-                Processing Payment...
-                {/* {paymentMethod === "online"
+                {paymentMethod === "online"
                   ? "Processing Payment..."
-                  : "Placing Order..."} */}
+                  : "Placing Order..."}
               </>
             ) : (
               <>
-                Pay Now
-                {/* {paymentMethod === "online" ? "Pay Now" : "Place Order (COD)"} */}
+                {paymentMethod === "online" ? "Pay Now" : "Place Order (COD)"}
               </>
             )}
           </Button>
