@@ -50,13 +50,25 @@ export default async function HomePage() {
   const heroSlides = await getHeroSlides();
   const featuredProducts = await getFeaturedProducts();
 
+  const desktopSlides = (heroSlides || []).filter(
+    (slide) => slide.is_landscape_image
+  );
+  const mobileSlides = (heroSlides || []).filter(
+    (slide) => !slide.is_landscape_image
+  );
+
   return (
     <>
       <StructuredData type="organization" />
       <StructuredData type="website" />
       <div>
         {/* Hero Section */}
-        <HeroCarousel heroSlides={heroSlides || []} />
+        <HeroCarousel
+          heroSlides={desktopSlides}
+          className="hidden md:block"
+          containerClassName="w-full aspect-[21/9] max-h-[85vh]"
+        />
+        <HeroCarousel heroSlides={mobileSlides} className="md:hidden" />
 
         {/* Featured Products */}
         <FeaturedProductsSection products={featuredProducts} />

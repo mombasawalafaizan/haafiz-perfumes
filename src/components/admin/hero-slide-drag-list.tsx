@@ -115,7 +115,9 @@ function SortableItem({
             {/* Content */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-2 mb-1">
-                <h3 className="font-medium truncate">{slide.title}</h3>
+                {!!slide.title && (
+                  <h3 className="font-medium">{slide.title}</h3>
+                )}
                 <Badge variant={slide.is_active ? "default" : "secondary"}>
                   {slide.is_active ? "Active" : "Inactive"}
                 </Badge>
@@ -129,11 +131,9 @@ function SortableItem({
                 <span className="text-xs text-muted-foreground">
                   Order: {slide.display_order}
                 </span>
-                {slide.is_landscape_image && (
-                  <Badge variant="outline" className="text-xs">
-                    Landscape
-                  </Badge>
-                )}
+                <Badge variant="outline" className="text-xs">
+                  {slide.is_landscape_image ? "Desktop" : "Mobile"}
+                </Badge>
               </div>
             </div>
           </div>
