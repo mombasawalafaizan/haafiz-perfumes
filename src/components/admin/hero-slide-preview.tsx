@@ -33,7 +33,9 @@ export function HeroSlidePreview({ slideData }: HeroSlidePreviewProps) {
             <Badge variant={is_active !== false ? "default" : "secondary"}>
               {is_active !== false ? "Active" : "Inactive"}
             </Badge>
-            {is_landscape_image && <Badge variant="outline">Landscape</Badge>}
+            <Badge variant="outline">
+              {is_landscape_image ? "Desktop" : "Mobile"}
+            </Badge>
           </div>
         </CardTitle>
       </CardHeader>
@@ -97,7 +99,11 @@ export function HeroSlidePreview({ slideData }: HeroSlidePreviewProps) {
                 {is_internal_link ? " (Internal)" : " (External)"}
               </p>
             )}
-            <p>Image Type: {is_landscape_image ? "Landscape" : "Portrait"}</p>
+            <p>
+              {is_landscape_image
+                ? "Landscape image — shown on desktop"
+                : "Portrait image — shown on mobile"}
+            </p>
           </div>
         </div>
       </CardContent>

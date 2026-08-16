@@ -130,7 +130,7 @@ export default function HeroSlidesPage() {
           </p>
         </div>
         <Button onClick={handleCreate}>
-          <Plus className="w-4 h-4 mr-2" />
+          <Plus className="w-4 h-4" />
           Add Slide
         </Button>
       </div>

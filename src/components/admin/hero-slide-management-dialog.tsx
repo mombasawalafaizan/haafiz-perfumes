@@ -40,7 +40,7 @@ export function HeroSlideManagementDialog({
     subtitle: "",
     button_text: "",
     link_url: "",
-    is_internal_link: false,
+    is_internal_link: true,
     is_landscape_image: false,
     is_active: true,
   });
@@ -65,7 +65,7 @@ export function HeroSlideManagementDialog({
         subtitle: "",
         button_text: "",
         link_url: "",
-        is_internal_link: false,
+        is_internal_link: true,
         is_landscape_image: false,
         is_active: true,
       });
